@@ -1,6 +1,7 @@
 """
 Repo Finder command script for the bot
 """
+from typing import Tuple
 
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -54,17 +55,17 @@ class Finder(commands.Cog):
             # FIX: Logs random exceptions to the console
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect topic, perhaps? Maybe try the command again?")
 
-        data2 = random.choice(resp["items"])
+        repo_data = random.choice(resp["items"])
 
-        repo_full_name = data2["full_name"]
-        repo_description = data2["description"]
-        repo_language = data2["language"]
-        repo_owner_image = data2["owner"]["avatar_url"]
-        repo_url = data2["html_url"]
-        repo_license_name = data2["license"]["name"]
-        issue_count = data2["open_issues_count"]
-        stargazers_count = data2["stargazers_count"]
-        forks_count = data2["forks_count"]
+        repo_full_name = repo_data["full_name"]
+        repo_description = repo_data["description"]
+        repo_language = repo_data["language"]
+        repo_owner_image = repo_data["owner"]["avatar_url"]
+        repo_url = repo_data["html_url"]
+        repo_license_name = repo_data["license"]["name"]
+        issue_count = repo_data["open_issues_count"]
+        stargazers_count = repo_data["stargazers_count"]
+        forks_count = repo_data["forks_count"]
 
         REPO_DETAILS = f"""
 Stars  ⭐ : {stargazers_count}
@@ -73,27 +74,10 @@ Forks  🍴 : {forks_count}
 License  🛡️ : {repo_license_name}
         """
 
-        issues_url = f"https://api.github.com/repos/{repo_full_name}/issues"
+        ISSUE_DETAILS = self.get_issue_details(repo_full_name)
+        issues_url = f"https://github.com/{repo_full_name}/issues"
 
-        issues_button_url = re.sub(
-            "(api.)|(/repos)", "", issues_url)  # replace using regex
-
-        issue_response_get = requests.get(
-            issues_url, headers={"Content-Type": "application/json",
-                                 "Authorization": GH_TOKEN})
-
-        issue_response = issue_response_get.json()
-
-        issue_title = issue_response[0]['title']
-        issue_link = issue_response[0]['url']
-        issue_link = re.sub("(api.)|(/repos)", "",
-                            issue_link)  # replace using regex
-        issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
-
-        ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [
-        ] else "Looks like there are no issues for this repository!"
-
-        repo_topics = data2["topics"]
+        repo_topics = repo_data["topics"]
 
         list_of_all_topics = " ".join(map(str, repo_topics))
 
@@ -106,7 +90,7 @@ License  🛡️ : {repo_license_name}
             style=ButtonStyle.URL, label="Go to Repository", url=repo_url)
 
         issue_button = create_button(
-            style=ButtonStyle.URL, label="View Issues", url=issues_button_url)
+            style=ButtonStyle.URL, label="View Issues", url=issues_url)
 
         embed_action_row = create_actionrow(issue_button, repo_button)
 
@@ -128,6 +112,27 @@ License  🛡️ : {repo_license_name}
             name="Topics", value=REPO_TOPICS_LIST, inline=False)
 
         await first_message.edit(content=f"Found a new repo matching topic `{target_topic}`!", embed=repo_embed, components=[embed_action_row])
+
+    def get_issue_details(self, repo_name: str) -> str:
+        """
+        Get repository issue info using Github API
+        """
+        issues_api_url = f"https://api.github.com/repos/{repo_name}/issues"
+
+        issue_response_get = requests.get(
+            issues_api_url, headers={"Content-Type": "application/json",
+                                 "Authorization": GH_TOKEN})
+
+        issue_response = issue_response_get.json()
+
+        issue_title = issue_response[0]['title']
+        issue_link = issue_response[0]['url']
+        issue_link = re.sub("(api.)|(/repos)", "",
+                            issue_link)  # replace using regex
+        issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
+
+        return f"{issue_title}\n{issue_desc}" if issue_response != [
+        ] else "Looks like there are no issues for this repository!"
 
 
 def setup(bot):
