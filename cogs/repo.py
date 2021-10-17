@@ -8,13 +8,13 @@ from discord_slash.utils.manage_components import create_actionrow, create_butto
 from discord_slash.model import ButtonStyle
 from requests.utils import requote_uri
 import discord
-import requests
+import aiohttp
 import random
 import os
 import re
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
-GH_TOKEN = os.environ.get("GH_TOKEN")
+GH_TOKEN = str(os.environ.get("GH_TOKEN"))
 
 __GUILD_IDS__ = [DEV_GUILD]
 
@@ -40,7 +40,7 @@ class Finder(commands.Cog):
         print("Finder up!")
 
     """ This will handle all search requests from now on. Provides modularity for future search commands """
-    def search_requester(self, payload):
+    async def search_requester(self, payload):
         """ Our payload structure example:
         payload = {
             # For now, search for open issues, repo topics, and repo languages
@@ -104,16 +104,15 @@ class Finder(commands.Cog):
 
         response = None
         try:
-            response = requests.get(url, headers={"Content-Type": "application/json",
-                                                  "Authorization": GH_TOKEN})
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as response:
+                    return await response.json()
         except:
             raise RequestError
-
-        return response
     # END search_requester
 
     # Process the search_requester response into an embed we can send
-    def process_embed(self, response, ctx):
+    async def process_embed(self, response, ctx):
         resp = response
 
         data2 = random.choice(resp["items"])
@@ -139,10 +138,13 @@ License  🛡️ : {repo_license_name}
         issues_url = f"https://api.github.com/repos/{repo_full_name}/issues"
         issues_button_url = re.sub(
             "(api.)|(/repos)", "", issues_url)  # replace using regex
-        issue_response_get = requests.get(
-            issues_url, headers={"Content-Type": "application/json",
-                                 "Authorization": GH_TOKEN})
-        issue_response = issue_response_get.json()
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(issues_url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as issue_response_get:
+                    issue_response = await issue_response_get.json()
+        except:
+            issue_response = None
+            raise RequestError
         try:
             issue_title = issue_response[0]['title']
             issue_link = issue_response[0]['url']
@@ -203,7 +205,7 @@ License  🛡️ : {repo_license_name}
         }
 
         try:
-            resp = self.search_requester(payload).json()
+            resp = await self.search_requester(payload)
         except RequestError as e:
             # FIX: Logs random exceptions to the console
             print(e)
@@ -212,7 +214,7 @@ License  🛡️ : {repo_license_name}
         if resp["total_count"] is 0:
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
-            self.process_embed(resp, ctx)
+            await self.process_embed(resp, ctx)
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
 
     # Find a repo by language and optional topic
@@ -252,7 +254,7 @@ rf.repolang \"python\"
                 payload["topics"] = topics
 
             try:
-                resp = self.search_requester(payload).json()
+                resp = await self.search_requester(payload)
             except RequestError as e:
                 # FIX: Logs random exceptions to the console
                 print(e)
@@ -261,7 +263,7 @@ rf.repolang \"python\"
             if resp["total_count"] is 0:
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             else:
-                self.process_embed(resp, ctx)
+                await self.process_embed(resp, ctx)
                 await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=self.repo_embed, components=[self.embed_action_row])
 
 def setup(bot):
