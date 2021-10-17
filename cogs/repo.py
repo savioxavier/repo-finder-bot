@@ -186,6 +186,7 @@ License  🛡️ : {repo_license_name}
 
     # Find a repo by optional topic
     @commands.command(name="repo")
+    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repo(self, ctx, *, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
@@ -220,6 +221,7 @@ License  🛡️ : {repo_license_name}
     # Find a repo by language and optional topic
     # ex. rf.repo "c,py,php" "hacktoberfest"
     @commands.command(name="repolang")
+    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
         if languages is None:
