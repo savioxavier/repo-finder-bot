@@ -87,6 +87,7 @@ rf.repolang \"c, py\" \"hacktoberfest, c\"
 ```
 - Double quotes are **required** if searching for multiple languages or topics
 - Language is **required**
+- Like `rf.repo`, you can separate with either commas or spaces
 
 **`setprefix [prefix]`** - Change prefix of the bot.
 
