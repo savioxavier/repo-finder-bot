@@ -47,7 +47,7 @@ class Finder(commands.Cog):
             'method': 'repositories',                        # https://docs.github.com/en/rest/reference/search
             'topics': ['hacktoberfest', 'hacktoberfest2021'] # Will be defaulted to 'hacktoberfest'
 
-            'langauges': ['python', 'javascript'],
+            'languages': ['python', 'javascript'],
             'issue': {
                 'isOpen': False,                             # https://docs.github.com/en/rest/reference/search#search-issues-and-pull-requests
                 'type': 'issue'                              # https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests
@@ -75,20 +75,20 @@ class Finder(commands.Cog):
                             pass
                         if key is "topics": unbuiltQuery += "topic:{}+".format(i);
                         if key is "languages": unbuiltQuery += "language:{}+".format(i);
-                elif len(payload[key]) <= 1:
+                elif len(payload[key]) <= 1: # TODO: check if key value is tuple first
                     try:
                         unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
                     except IndexError: # if the unbuiltQuery is empty, do nothing
                         pass
                     if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"][0]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["langauges"][0]);
+                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"][0]);
                 elif payload[key]: # make sure it's not a key with an empty value
                     try:
                         unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
                     except IndexError: # if the unbuiltQuery is empty, do nothing
                         pass
                     if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["langauges"]);
+                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"]);
                 else:
                     pass
 
@@ -122,7 +122,11 @@ class Finder(commands.Cog):
         repo_language = data2["language"]
         repo_owner_image = data2["owner"]["avatar_url"]
         repo_url = data2["html_url"]
-        repo_license_name = data2["license"]["name"]
+        try:
+            repo_license_name = data2["license"]["name"]
+        except TypeError: # encountered a NoneType once
+            repo_license_name = "None"
+            pass
         issue_count = data2["open_issues_count"]
         stargazers_count = data2["stargazers_count"]
         forks_count = data2["forks_count"]
@@ -139,13 +143,15 @@ License  🛡️ : {repo_license_name}
             issues_url, headers={"Content-Type": "application/json",
                                  "Authorization": GH_TOKEN})
         issue_response = issue_response_get.json()
-        issue_title = issue_response[0]['title']
-        issue_link = issue_response[0]['url']
-        issue_link = re.sub("(api.)|(/repos)", "",
+        try:
+            issue_title = issue_response[0]['title']
+            issue_link = issue_response[0]['url']
+            issue_link = re.sub("(api.)|(/repos)", "",
                             issue_link)  # replace using regex
-        issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
-        ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [
-        ] else "Looks like there are no issues for this repository!"
+            issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
+            ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [] else "Looks like there are no issues for this repository!"
+        except IndexError:
+            ISSUE_DETAILS = "Looks like there are no issues for this repository!"
         repo_topics = data2["topics"]
         list_of_all_topics = " ".join(map(str, repo_topics))
         REPO_TOPICS_LIST = f"""```fix
@@ -169,7 +175,8 @@ License  🛡️ : {repo_license_name}
         self.repo_embed.add_field(
             name="Latest Issues", value=ISSUE_DETAILS, inline=False)
         self.repo_embed.set_footer(text="Repo Finder Bot")
-        self.repo_embed.add_field(
+        if " ".join(repo_topics).replace(" ", "") is not "": # this is dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
+            self.repo_embed.add_field(
             name="Topics", value=REPO_TOPICS_LIST, inline=False)
 
         return
@@ -177,12 +184,16 @@ License  🛡️ : {repo_license_name}
 
     # Find a repo by optional topic
     @commands.command(name="repo")
-    async def command_find_repo(self, ctx, *, arg: str = "hacktoberfest"):
-        target_topic = arg.replace(" ", "-")
+    async def command_find_repo(self, ctx, *, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
+        if topics is None:
+            topics = ["hacktoberfest",]
+        elif " " in topics or "," in topics:
+            topics = topics.replace(" ", ",").split(",")
+
         payload = {
             'method': "repositories",
-            'topics': [target_topic, ]
+            'topics': topics
         }
 
         try:
@@ -196,7 +207,41 @@ License  🛡️ : {repo_license_name}
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
             self.process_embed(resp, ctx)
-            await first_message.edit(content=f"Found a new repo matching topic `{target_topic}`!", embed=self.repo_embed, components=[self.embed_action_row])
+            await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
+
+    # Find a repo by language and optional topic
+    # ex. rf.repo "c,py,php" "hacktoberfest"
+    @commands.command(name="repolang")
+    async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
+        first_message = await ctx.send("Fetching a repo, just for you!")
+        if languages is None:
+            await first_message.edit(content="""You need to specify a language!
+Example:```
+rf.repolang \"python\"
+```""")
+        else:
+            languages = languages.replace(" ", "").split(",")
+            payload = {
+                'method': "repositories",
+                'languages': languages,
+            }
+
+            if topics:
+                topics = topics.replace(" ", "").split(",")
+                payload["topics"] = topics
+
+            try:
+                resp = self.search_requester(payload).json()
+            except RequestError as e:
+                # FIX: Logs random exceptions to the console
+                print(e)
+                await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
+
+            if resp["total_count"] is 0:
+                await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
+            else:
+                self.process_embed(resp, ctx)
+                await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=self.repo_embed, components=[self.embed_action_row])
 
 def setup(bot):
     "Setup command for the bot"

@@ -71,7 +71,22 @@ async def setprefix(ctx, *, prefixes=""):
 BOT_HELP = """
 **`help`** - Displays this embed.
 
-**`repo [topic]`** - Find a repo with an optional topic. Topic defaults to `hacktoberfest`.
+**`repo [topic] [topic]`** - Find a repo with an optional topic(s). Topic defaults to `hacktoberfest`. Can also specify multiple topics:
+```py
+rf.repo python hacktoberfest
+```
+or:
+```py
+rf.repo python, hacktoberfest
+```
+
+**`repolang (languages) [topic]`** - Find a repo with specified language.
+Example:
+```py
+rf.repolang \"c, py\" \"hacktoberfest, c\"
+```
+- Double quotes are **required** if searching for multiple languages or topics
+- Language is **required**
 
 **`setprefix [prefix]`** - Change prefix of the bot.
 
