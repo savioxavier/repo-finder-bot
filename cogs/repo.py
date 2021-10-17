@@ -190,6 +190,8 @@ License  🛡️ : {repo_license_name}
             topics = ["hacktoberfest",]
         elif " " in topics or "," in topics:
             topics = topics.replace(" ", ",").split(",")
+        else:
+            topics = [topics, ]
 
         payload = {
             'method': "repositories",
