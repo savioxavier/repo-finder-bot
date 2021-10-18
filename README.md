@@ -16,7 +16,11 @@ This is the Repo Finder Bot, a bot designed to help people find good GitHub repo
 
 - **How does it work?**
 
-Simple. Whenever you execute the `rf.repo [topic]` command in your server, the bot uses the GitHub API to find a good repository matching the topic and then send an array of details related to it.
+Simple. Whenever you execute the `rf.repo [topic]` command in your server, the bot uses the GitHub API to find a good repository matching the topic and then send an array of details related to it. 
+
+You can also search for multiple topics, eg: `rf.repo [topic1] [topic2]`.
+
+You can even search repos of specific languages *and* topics using the `rf.repolang [languages] [topics]` command.
 
 - **What sort of details?**
 
