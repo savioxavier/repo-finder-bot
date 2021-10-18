@@ -44,19 +44,24 @@ Of course you can! Just click [this link](https://discord.com/api/oauth2/authori
 
 Just check out the Issues pane for potential issues and submit a PR to solve them. Of course, you can always submit regular PRs not linked to an issue and I'd be happy to accept them!
 
-Icons made by [Freepik](https://www.freepik.com) from [Flaticon](https://www.flaticon.com/).
 
-- **Ok well how can I run it myself?**
+- **How do I run the bot myself?**
 
-> 1. Clone this repo
-> 2. Create a Discord bot token [here](https://discord.com/developers)
-> 3. Create a personal access token on GitHub [here](https://github.com/settings/tokens) (Make sure to copy it immediately! You "lose" it once you refresh or close the tab)
-> 4. Make a new file called `.env` inside the repo folder and paste this code block in the file
+> 1. Clone this repository
+> 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)
+> 3. Create a GitHub personal access token from [here](https://github.com/settings/tokens/) (Make sure to copy it immediately! You "lose" it once you refresh or close the tab)
+> 4. Make a new file called `.env` inside the repo folder and paste the below code block in the file
 > ```
 > GH_TOKEN="[paste Github token here]"
 > TOKEN="[paste Discord bot token here]"
+> DEV_GUILD=[paste your bot testing server ID here]
 > ```
-> 5. Run `python3 -m pip install -r requirements`. You'll need Python3.6 at least
-> 6. After that's done, run the bot at `python3 main.py`
+> 5. Run `pip install -r requirements.txt` to install packages. You'll require Python 3.6 or better
+> 6. Once that's done, run the bot by executing `python3 main.py` in the terminal
+>
+> If you aren't sure how to obtain your server ID, check out [this article](https://www.alphr.com/discord-find-server-id/)
 > 
 > If you get errors related to missing token environment variables, run `source .env`
+
+
+Icons made by [Freepik](https://www.freepik.com) from [Flaticon](https://www.flaticon.com/).
