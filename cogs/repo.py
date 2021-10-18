@@ -188,11 +188,15 @@ License  🛡️ : {repo_license_name}
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
             topics = ["hacktoberfest",]
-        elif " " in topics or "," in topics:
+        elif "," in topics: # if user separates by comma, split and strip spaces
+            topics = topics.split(",")
+            topics = [s.strip() for s in topics]
+        elif " " in topics: # if user separates by space, strip duplicate spaces, and replace spaces with commas
+#           topics = " ".join(topics.split(" "))
+            topics = re.sub("\s\s+", " ", topics)
             topics = topics.replace(" ", ",").split(",")
         else:
-            topics = [topics, ]
-
+            topics = [topics,]
         payload = {
             'method': "repositories",
             'topics': topics
@@ -222,14 +226,29 @@ Example:```
 rf.repolang \"python\"
 ```""")
         else:
-            languages = languages.replace(" ", "").split(",")
+#            languages = languages.replace(" ", "").split(",")
+            if "," in languages: # if user separates by comma, split and strip spaces
+                languages = languages.split(",")
+                languages = [s.strip() for s in languages]
+            elif " " in languages: # if user separates by space, strip duplicate spaces, and replace spaces with commas
+                languages = re.sub("\s\s+", " ", languages)
+                languages = languages.replace(" ", ",").split(",")
+            else:
+                languages = [languages,]
             payload = {
                 'method': "repositories",
                 'languages': languages,
             }
 
             if topics:
-                topics = topics.replace(" ", "").split(",")
+                if "," in topics: # if user separates by comma, split and strip spaces
+                    topics = topics.split(",")
+                    topics = [s.strip() for s in topics]
+                elif " " in topics: # if user separates by space, strip duplicate spaces, and replace spaces with commas
+                    topics = re.sub("\s\s+", " ", topics)
+                    topics = topics.replace(" ", ",").split(",")
+                else:
+                    topics = [topics,]
                 payload["topics"] = topics
 
             try:
