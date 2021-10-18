@@ -114,6 +114,10 @@ async def command_help(ctx):
 
     await ctx.send(embed=bot_help)
 
+@client.event
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(f"This command is on cooldown. Try again after `{round(error.retry_after)}` seconds.", delete_after=5)
 
 client.load_extension("cogs.repo")
 client.load_extension("cogs.meta")
