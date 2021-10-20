@@ -36,7 +36,7 @@ class Finder(commands.Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        "Function to determine what commands are to be if bot is connected to Discord"
+        "Function to determine what commands are to be if bot == connected to Discord"
 
         print("Finder up!")
 
@@ -67,37 +67,37 @@ class Finder(commands.Cog):
 
         # Build the query. If key contains multiple values, parse and append as required
         for key in payload:
-            if key is "topics" or key is "languages":
+            if key == "topics" or key == "languages":
                 if len(payload[key]) > 1:
                     for i in payload[key]:
                         try:
-                            unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                        except IndexError: # if the unbuiltQuery is empty, do nothing
+                            unbuiltQuery += "+" if unbuiltQuery[-1] !=  "+" else "" # Prevent malformed queries by appending a "+" at the end if there == none
+                        except IndexError: # if the unbuiltQuery == empty, do nothing
                             pass
-                        if key is "topics": unbuiltQuery += "topic:{}+".format(i);
-                        if key is "languages": unbuiltQuery += "language:{}+".format(i);
-                elif len(payload[key]) <= 1: # TODO: check if key value is tuple first
+                        if key == "topics": unbuiltQuery += "topic:{}+".format(i);
+                        if key == "languages": unbuiltQuery += "language:{}+".format(i);
+                elif len(payload[key]) <= 1: # TODO: check if key value == tuple first
                     try:
-                        unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                    except IndexError: # if the unbuiltQuery is empty, do nothing
+                        unbuiltQuery += "+" if unbuiltQuery[-1] !=  "+" else "" # Prevent malformed queries by appending a "+" at the end if there == none
+                    except IndexError: # if the unbuiltQuery == empty, do nothing
                         pass
-                    if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"][0]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"][0]);
+                    if key == "topics": unbuiltQuery += "topic:{}+".format(payload["topics"][0]);
+                    if key == "languages": unbuiltQuery += "language:{}+".format(payload["languages"][0]);
                 elif payload[key]: # make sure it's not a key with an empty value
                     try:
-                        unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                    except IndexError: # if the unbuiltQuery is empty, do nothing
+                        unbuiltQuery += "+" if unbuiltQuery[-1] !=  "+" else "" # Prevent malformed queries by appending a "+" at the end if there == none
+                    except IndexError: # if the unbuiltQuery == empty, do nothing
                         pass
-                    if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"]);
+                    if key == "topics": unbuiltQuery += "topic:{}+".format(payload["topics"]);
+                    if key == "languages": unbuiltQuery += "language:{}+".format(payload["languages"]);
                 else:
                     pass
 
-            elif key is "issue":
+            elif key == "issue":
                 if payload[key]:
-                    unbuiltQuery += "is:issue+" if payload["issue"]["type"] is "issue" else "is:pr+"
-                    unbuiltQuery += "is:open+" if payload["issue"]["isOpen"] is True else "" # "is:closed+"?
-            elif key is "searchQuery":
+                    unbuiltQuery += "is:issue+" if payload["issue"]["type"] == "issue" else "is:pr+"
+                    unbuiltQuery += "is:open+" if payload["issue"]["isOpen"] == True else "" # "is:closed+"?
+            elif key == "searchQuery":
                 if payload[key]:
                     unbuiltQuery += "\"{}\"".format(payload["searchQuery"]) if payload["searchQuery"] else ""
 
@@ -178,7 +178,7 @@ License  🛡️ : {repo_license_name}
         self.repo_embed.add_field(
             name="Latest Issues", value=ISSUE_DETAILS, inline=False)
         self.repo_embed.set_footer(text="Repo Finder Bot")
-        if " ".join(repo_topics).replace(" ", "") is not "": # this is dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
+        if " ".join(repo_topics).replace(" ", "") != "": # this == dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
             self.repo_embed.add_field(
             name="Topics", value=REPO_TOPICS_LIST, inline=False)
 
@@ -189,7 +189,7 @@ License  🛡️ : {repo_license_name}
     @cog_ext.cog_slash(name="repo", description="Find a repo by topic", guild_ids=__GID__)
     async def command_find_repo(self, ctx, *, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
-        if topics is None:
+        if topics == None:
             topics = ["hacktoberfest",]
         elif "," in topics: # if user separates by comma, split and strip spaces
             topics = topics.split(",")
@@ -212,7 +212,7 @@ License  🛡️ : {repo_license_name}
             print(e)
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
 
-        if resp["total_count"] is 0:
+        if resp["total_count"] == 0:
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
             await self.process_embed(resp, ctx)
@@ -224,7 +224,7 @@ License  🛡️ : {repo_license_name}
     @cog_ext.cog_slash(name="repolang", description="Find a repo by your preferred language", guild_ids=__GID__)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
-        if languages is None:
+        if languages == None:
             await first_message.edit(content="""You need to specify a language!
 Example:```
 rf.repolang \"python\"
@@ -262,7 +262,7 @@ rf.repolang \"python\"
                 print(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
 
-            if resp["total_count"] is 0:
+            if resp["total_count"] == 0:
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             else:
                 await self.process_embed(resp, ctx)
