@@ -35,7 +35,7 @@ async def determine_prefix(bot, message):
     else:
         return default_prefixes
 
-activity = discord.Game(name="rf.help")
+activity = discord.Game(name="rf.help | Slash Commands")
 client = commands.Bot(command_prefix=determine_prefix,
                       case_insensitive=True,
                       activity=activity,
