@@ -6,12 +6,14 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 from discord_slash.utils.manage_components import create_actionrow, create_button
 from discord_slash.model import ButtonStyle
+from discord_slash import cog_ext
 import discord
-import datetime
+import datetime as dt
 import time
 import os
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
+__GID__ = [846609621429780520]
 
 
 class Meta(commands.Cog):
@@ -35,21 +37,28 @@ class Meta(commands.Cog):
 
         print("Meta up!")
 
-    @commands.command(name="info")
-    async def comand_botinfo(self, ctx):
+    @cog_ext.cog_slash(name="info", description="Return details about the bot.", guild_ids=__GID__)
+    async def _info(self, ctx):
         "Info command for the bot"
 
         info = discord.Embed(
             title="Bot Info",
-            value="Information about the Repo Finder bot",
-            color=0xd95025,
-            timestamp=ctx.message.created_at)
+            description="Information about the Repo Finder bot",
+            color=0xd95025)
 
         info.set_author(
             name=f"{self.client.user.name}#{self.client.user.discriminator}", icon_url=self.client.user.avatar_url)
 
-        uptime = str(datetime.timedelta(
-            seconds=int(round(time.time() - bot_start_time))))
+        uptime = dt.timedelta(
+            seconds=int(round(time.time() - bot_start_time)))
+
+        def strfdelta(tdelta, fmt):
+            d = {"days": tdelta.days}
+            d["hours"], rem = divmod(tdelta.seconds, 3600)
+            d["minutes"], d["seconds"] = divmod(rem, 60)
+            return fmt.format(**d)
+
+        uptime = strfdelta(uptime, "{days} days, {hours} hours and {minutes} minutes")
 
         info.add_field(name="Uptime", value=uptime, inline=False)
         info.add_field(name="Default prefix", value="`rf.`", inline=False)

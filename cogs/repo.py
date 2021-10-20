@@ -9,6 +9,7 @@ from discord_slash.model import ButtonStyle
 from requests.utils import requote_uri
 import discord
 import aiohttp
+from discord_slash import cog_ext
 import random
 import os
 import re
@@ -16,7 +17,7 @@ import re
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 GH_TOKEN = str(os.environ.get("GH_TOKEN"))
 
-__GUILD_IDS__ = [DEV_GUILD]
+__GID__ = [846609621429780520]
 
 class RequestError(Exception):
     pass
@@ -185,8 +186,7 @@ License  🛡️ : {repo_license_name}
     # END process_embed
 
     # Find a repo by optional topic
-    @commands.command(name="repo")
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
+    @cog_ext.cog_slash(name="repo", description="Find a repo by topic", guild_ids=__GID__)
     async def command_find_repo(self, ctx, *, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
@@ -219,9 +219,9 @@ License  🛡️ : {repo_license_name}
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
 
     # Find a repo by language and optional topic
-    # ex. rf.repo "c,py,php" "hacktoberfest"
-    @commands.command(name="repolang")
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
+    # # ex. rf.repo "c,py,php" "hacktoberfest"
+    # no cooldowns cus you can't really spam slash cmds
+    @cog_ext.cog_slash(name="repolang", description="Find a repo by your preferred language", guild_ids=__GID__)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
         if languages is None:
