@@ -18,8 +18,10 @@ GH_TOKEN = str(os.environ.get("GH_TOKEN"))
 
 __GUILD_IDS__ = [DEV_GUILD]
 
+
 class RequestError(Exception):
     pass
+
 
 class Finder(commands.Cog):
     """Main class for the Finder command
@@ -66,41 +68,42 @@ class Finder(commands.Cog):
 
         # Build the query. If key contains multiple values, parse and append as required
         for key in payload:
-            if key is "topics" or key is "languages":
+            if key in ["topics", "languages"]:
                 if len(payload[key]) > 1:
                     for i in payload[key]:
                         try:
-                            unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                        except IndexError: # if the unbuiltQuery is empty, do nothing
+                            # Prevent malformed queries by appending a "+" at the end if there is none
+                            unbuiltQuery += "+" if unbuiltQuery[-1] != "+" else ""
+                        except IndexError:  # if the unbuiltQuery is empty, do nothing
                             pass
-                        if key is "topics": unbuiltQuery += "topic:{}+".format(i);
-                        if key is "languages": unbuiltQuery += "language:{}+".format(i);
-                elif len(payload[key]) <= 1: # TODO: check if key value is tuple first
-                    try:
-                        unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                    except IndexError: # if the unbuiltQuery is empty, do nothing
-                        pass
-                    if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"][0]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"][0]);
-                elif payload[key]: # make sure it's not a key with an empty value
-                    try:
-                        unbuiltQuery += "+" if unbuiltQuery[-1] is not "+" else "" # Prevent malformed queries by appending a "+" at the end if there is none
-                    except IndexError: # if the unbuiltQuery is empty, do nothing
-                        pass
-                    if key is "topics": unbuiltQuery += "topic:{}+".format(payload["topics"]);
-                    if key is "languages": unbuiltQuery += "language:{}+".format(payload["languages"]);
+                        if key == "languages":
+                            unbuiltQuery += "language:{}+".format(i)
+                        else:
+                            unbuiltQuery += "topic:{}+".format(i)
                 else:
-                    pass
-
-            elif key is "issue":
+                    try:
+                        # Prevent malformed queries by appending a "+" at the end if there is none
+                        unbuiltQuery += "+" if unbuiltQuery[-1] != "+" else ""
+                    except:  # if the unbuiltQuery is empty, do nothing
+                        pass
+                    if key == "languages":
+                        unbuiltQuery += "language:{}+".format(
+                            payload["languages"][0])
+                    else:
+                        unbuiltQuery += "topic:{}+".format(
+                            payload["topics"][0])
+            elif key == "issue":
                 if payload[key]:
-                    unbuiltQuery += "is:issue+" if payload["issue"]["type"] is "issue" else "is:pr+"
-                    unbuiltQuery += "is:open+" if payload["issue"]["isOpen"] is True else "" # "is:closed+"?
-            elif key is "searchQuery":
+                    unbuiltQuery += "is:issue+" if payload["issue"]["type"] == "issue" else "is:pr+"
+                    # "is:closed+"?
+                    unbuiltQuery += "is:open+" if payload["issue"]["isOpen"] is True else ""
+            elif key == "searchQuery":
                 if payload[key]:
-                    unbuiltQuery += "\"{}\"".format(payload["searchQuery"]) if payload["searchQuery"] else ""
+                    unbuiltQuery += "\"{}\"".format(
+                        payload["searchQuery"]) if payload["searchQuery"] else ""
 
-        url = "https://api.github.com/search/{}?q={}&per_page=75".format(payload["method"], requote_uri(unbuiltQuery)) # encode and build the query
+        url = "https://api.github.com/search/{}?q={}&per_page=75".format(
+            payload["method"], requote_uri(unbuiltQuery))  # encode and build the query
 
         response = None
         try:
@@ -123,7 +126,7 @@ class Finder(commands.Cog):
         repo_url = data2["html_url"]
         try:
             repo_license_name = data2["license"]["name"]
-        except TypeError: # encountered a NoneType once
+        except TypeError:  # encountered a NoneType once
             repo_license_name = "None"
             pass
         issue_count = data2["open_issues_count"]
@@ -149,9 +152,10 @@ License  🛡️ : {repo_license_name}
             issue_title = issue_response[0]['title']
             issue_link = issue_response[0]['url']
             issue_link = re.sub("(api.)|(/repos)", "",
-                            issue_link)  # replace using regex
+                                issue_link)  # replace using regex
             issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
-            ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [] else "Looks like there are no issues for this repository!"
+            ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [
+            ] else "Looks like there are no issues for this repository!"
         except IndexError:
             ISSUE_DETAILS = "Looks like there are no issues for this repository!"
         repo_topics = data2["topics"]
@@ -166,7 +170,7 @@ License  🛡️ : {repo_license_name}
             style=ButtonStyle.URL, label="View Issues", url=issues_button_url)
         self.embed_action_row = create_actionrow(issue_button, repo_button)
         self.repo_embed = discord.Embed(title=repo_full_name, url=repo_url,
-                                   description=repo_description, color=0xd95025, timestamp=ctx.message.created_at)
+                                        description=repo_description, color=0xd95025, timestamp=ctx.message.created_at)
         self.repo_embed.set_thumbnail(url=repo_owner_image)
         self.repo_embed.add_field(
             name="Language", value=repo_language, inline=True)
@@ -177,9 +181,10 @@ License  🛡️ : {repo_license_name}
         self.repo_embed.add_field(
             name="Latest Issues", value=ISSUE_DETAILS, inline=False)
         self.repo_embed.set_footer(text="Repo Finder Bot")
-        if " ".join(repo_topics).replace(" ", "") is not "": # this is dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
+        # this is dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
+        if " ".join(repo_topics).replace(" ", "") != "":
             self.repo_embed.add_field(
-            name="Topics", value=REPO_TOPICS_LIST, inline=False)
+                name="Topics", value=REPO_TOPICS_LIST, inline=False)
 
         return
     # END process_embed
@@ -190,16 +195,16 @@ License  🛡️ : {repo_license_name}
     async def command_find_repo(self, ctx, *, topics: str = None):
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
-            topics = ["hacktoberfest",]
-        elif "," in topics: # if user separates by comma, split and strip spaces
+            topics = ["hacktoberfest", ]
+        elif "," in topics:  # if user separates by comma, split and strip spaces
             topics = topics.split(",")
             topics = [s.strip() for s in topics]
-        elif " " in topics: # if user separates by space, strip duplicate spaces, and replace spaces with commas
-#           topics = " ".join(topics.split(" "))
+        elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
+            # topics = " ".join(topics.split(" "))
             topics = re.sub("\s\s+", " ", topics)
             topics = topics.replace(" ", ",").split(",")
         else:
-            topics = [topics,]
+            topics = [topics, ]
         payload = {
             'method': "repositories",
             'topics': topics
@@ -212,7 +217,7 @@ License  🛡️ : {repo_license_name}
             print(e)
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
 
-        if resp["total_count"] is 0:
+        if resp["total_count"] == 0:
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
             await self.process_embed(resp, ctx)
@@ -230,29 +235,29 @@ Example:```
 rf.repolang \"python\"
 ```""")
         else:
-#            languages = languages.replace(" ", "").split(",")
-            if "," in languages: # if user separates by comma, split and strip spaces
+            # languages = languages.replace(" ", "").split(",")
+            if "," in languages:  # if user separates by comma, split and strip spaces
                 languages = languages.split(",")
                 languages = [s.strip() for s in languages]
-            elif " " in languages: # if user separates by space, strip duplicate spaces, and replace spaces with commas
+            elif " " in languages:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
                 languages = re.sub("\s\s+", " ", languages)
                 languages = languages.replace(" ", ",").split(",")
             else:
-                languages = [languages,]
+                languages = [languages, ]
             payload = {
                 'method': "repositories",
                 'languages': languages,
             }
 
             if topics:
-                if "," in topics: # if user separates by comma, split and strip spaces
+                if "," in topics:  # if user separates by comma, split and strip spaces
                     topics = topics.split(",")
                     topics = [s.strip() for s in topics]
-                elif " " in topics: # if user separates by space, strip duplicate spaces, and replace spaces with commas
+                elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
                     topics = re.sub("\s\s+", " ", topics)
                     topics = topics.replace(" ", ",").split(",")
                 else:
-                    topics = [topics,]
+                    topics = [topics, ]
                 payload["topics"] = topics
 
             try:
@@ -262,11 +267,12 @@ rf.repolang \"python\"
                 print(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
 
-            if resp["total_count"] is 0:
+            if resp["total_count"] == 0:
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             else:
                 await self.process_embed(resp, ctx)
                 await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=self.repo_embed, components=[self.embed_action_row])
+
 
 def setup(bot):
     "Setup command for the bot"

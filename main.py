@@ -43,7 +43,7 @@ client = commands.Bot(command_prefix=determine_prefix,
                       help_command=None,
                       status=Status.idle
                       )
-slash = SlashCommand(client, sync_commands=True)
+slash = SlashCommand(client, sync_commands=True, sync_on_cog_reload=True)
 
 
 @client.event
@@ -113,6 +113,7 @@ async def command_help(ctx):
     bot_help.set_footer(text="Repo Finder Bot")
 
     await ctx.send(embed=bot_help)
+
 
 @client.event
 async def on_command_error(ctx: commands.Context, error):
