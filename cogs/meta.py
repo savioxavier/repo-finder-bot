@@ -5,6 +5,7 @@ Meta commands script for the bot
 import datetime
 import os
 import time
+import logging
 
 import discord
 from discord.ext import commands
@@ -35,11 +36,12 @@ class Meta(commands.Cog):
     async def on_ready(self):
         "Function to determine what commands are to be if bot is connected to Discord"
 
-        print("Meta up!")
+        logging.info("Meta up!")
 
     @commands.command(name="info")
     async def comand_botinfo(self, ctx):
         "Info command for the bot"
+        logging.debug(f"{ctx.message.author} - initiated info command")
 
         info = discord.Embed(
             title="Bot Info",

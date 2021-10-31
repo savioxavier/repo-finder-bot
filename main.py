@@ -2,7 +2,9 @@
 Master script for the bot
 """
 
+from datetime import date
 import os
+import logging
 
 import discord
 from discord.enums import Status
@@ -11,6 +13,12 @@ from discord_slash import SlashCommand
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure logging level here
+logging.basicConfig(
+    level=logging.INFO, #  Set your preferred logging level here
+    format="[%(asctime)s][%(levelname)s] %(message)s",
+    datefmt="%I:%M.%S%p")
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 TOKEN = os.environ.get("TOKEN")
@@ -32,10 +40,13 @@ async def determine_prefix(bot, message):
     guild = message.guild
 
     if guild:
+        logging.debug(f"Custom prefix is '{custom_prefixes.get(guild.id, default_prefixes)}'")
         return custom_prefixes.get(guild.id, default_prefixes)
     else:
+        logging.debug(f"Using default prefix '{default_prefixes}'")
         return default_prefixes
 
+logging.debug("Initial presence set")
 activity = discord.Game(name="rf.help")
 client = commands.Bot(command_prefix=determine_prefix,
                       case_insensitive=True,
@@ -50,7 +61,7 @@ slash = SlashCommand(client, sync_commands=True, sync_on_cog_reload=True)
 @client.event
 async def on_ready():
     "Function to determine what commands are to be if bot is connected to Discord"
-    print(f"Logged in as {client.user.name}#{client.user.discriminator}!")
+    logging.info(f"Logged in as {client.user.name}#{client.user.discriminator}!")
 
 
 @client.command()
@@ -65,7 +76,9 @@ async def setprefix(ctx, *, prefixes=""):
         custom_prefixes[ctx.guild.id] = prefixes.split() or default_prefixes
 
         await ctx.send("Prefixes set for this guild!")
+        logging.debug(f"Set prefix: {prefixes} for guild.id: {ctx.guild.id}")
     except:
+        logging.warning(f"Prefix set failed for guild.id: {ctx.guild.id}")
         await ctx.send("Something went wrong trying to set prefixes for this guild.")
 
 
@@ -103,6 +116,7 @@ _Slash commands coming soon!_
 @client.command(name="help", description="List commands")
 async def command_help(ctx):
     "Main help command for the bot"
+    logging.debug(f"{ctx.message.author} - initiated help command")
 
     bot_help = discord.Embed(
         title="Available commands for Repo Finder Bot",
@@ -119,8 +133,13 @@ async def command_help(ctx):
 @client.event
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
+        logging.debug(f"{ctx.message.author} - initiated a command on cooldown")
         await ctx.send(f"This command is on cooldown. Try again after `{round(error.retry_after)}` seconds.", delete_after=5)
+    else:
+        logging.warning(f"A discord.py command error occured:\n{error}")
 
 client.load_extension("cogs.repo")
 client.load_extension("cogs.meta")
+
+logging.info("Cog loading complete")
 client.run(TOKEN)
