@@ -32,6 +32,9 @@ class Finder(commands.Cog):
         commands (string): Command
     """
 
+    _api_repos_re = re.compile("(api.)|(/repos)")
+    _whitespace_re = re.compile(r"\s\s+")
+
     def __init__(self, client):
         "Init function for Discord client"
 
@@ -42,6 +45,31 @@ class Finder(commands.Cog):
         "Function to determine what commands are to be if bot is connected to Discord"
 
         print("Finder up!")
+
+    @staticmethod
+    def build_query(key, value):
+        raw_query = ""
+        if key in ["topics", "languages"]:
+            if len(value) > 1:
+                for i in value:
+                    if len(raw_query) > 0 and raw_query[-1] != "+":
+                        # Prevent malformed queries by appending a "+" at the end if there is none
+                        raw_query += "+"
+                    # Just remove the last letter, topics -> topic
+                    raw_query += key[:len(key) - 1] + ":" + str(i) + "+"
+            else:
+                if len(raw_query) > 0 and raw_query[-1] != "+":
+                    # Prevent malformed queries by appending a "+" at the end if there is none
+                    raw_query += "+"
+                raw_query += key[:len(key) - 1] + ":" + value[0] + "+"
+        elif key == "issue":
+            if value:
+                raw_query += ("is:issue+" if value["type"] == "issue" else "is:pr+"
+                              ) + ("is:open+" if value["isOpen"] is True else "")
+        elif key == "searchQuery":
+            if value:
+                raw_query += "\"{}\"".format(value) if value else ""
+        return raw_query
 
     """ This will handle all search requests from now on. Provides modularity for future search commands """
     async def search_requester(self, payload):
@@ -60,54 +88,19 @@ class Finder(commands.Cog):
             'searchQuery': 'add command handler'
         }
         """
-        # Now how do we conditionally add in these args to a search query? Warning: incoming mess
-        # improve later please!
         """ Example query based on above payload example (excluding issue example):
             https://api.github.com/search/repositories?q=topic:hacktoberfest+topic:hacktoberfest2021+language:python+language:javascript+'add command handler'
                                          {method}              {topics}                              {languages}                         {searchQuery}
         """
-        unbuiltQuery = ""
+        raw_query = ""
 
         # Build the query. If key contains multiple values, parse and append as required
         for key in payload:
-            if key in ["topics", "languages"]:
-                if len(payload[key]) > 1:
-                    for i in payload[key]:
-                        try:
-                            # Prevent malformed queries by appending a "+" at the end if there is none
-                            unbuiltQuery += "+" if unbuiltQuery[-1] != "+" else ""
-                        except IndexError:  # if the unbuiltQuery is empty, do nothing
-                            pass
-                        if key == "languages":
-                            unbuiltQuery += "language:{}+".format(i)
-                        else:
-                            unbuiltQuery += "topic:{}+".format(i)
-                else:
-                    try:
-                        # Prevent malformed queries by appending a "+" at the end if there is none
-                        unbuiltQuery += "+" if unbuiltQuery[-1] != "+" else ""
-                    except:  # if the unbuiltQuery is empty, do nothing
-                        pass
-                    if key == "languages":
-                        unbuiltQuery += "language:{}+".format(
-                            payload["languages"][0])
-                    else:
-                        unbuiltQuery += "topic:{}+".format(
-                            payload["topics"][0])
-            elif key == "issue":
-                if payload[key]:
-                    unbuiltQuery += "is:issue+" if payload["issue"]["type"] == "issue" else "is:pr+"
-                    # "is:closed+"?
-                    unbuiltQuery += "is:open+" if payload["issue"]["isOpen"] is True else ""
-            elif key == "searchQuery":
-                if payload[key]:
-                    unbuiltQuery += "\"{}\"".format(
-                        payload["searchQuery"]) if payload["searchQuery"] else ""
+            raw_query += self.build_query(key, payload[key])
 
         url = "https://api.github.com/search/{}?q={}&per_page=75".format(
-            payload["method"], requote_uri(unbuiltQuery))  # encode and build the query
+            payload["method"], requote_uri(raw_query))  # encode and build the query
 
-        response = None
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as response:
@@ -117,20 +110,18 @@ class Finder(commands.Cog):
     # END search_requester
 
     # Process the search_requester response into an embed we can send
-    async def process_embed(self, response, ctx):
-        resp = response
-
+    async def process_embed(self, resp, ctx):
+        print("process embed call")
         data2 = random.choice(resp["items"])
         repo_full_name = data2["full_name"]
         repo_description = data2["description"]
         repo_language = data2["language"]
         repo_owner_image = data2["owner"]["avatar_url"]
         repo_url = data2["html_url"]
-        try:
+        if "license" in data2 and "name" in data2["license"]:
             repo_license_name = data2["license"]["name"]
-        except TypeError:  # encountered a NoneType once
+        else:
             repo_license_name = "None"
-            pass
         issue_count = data2["open_issues_count"]
         stargazers_count = data2["stargazers_count"]
         forks_count = data2["forks_count"]
@@ -141,23 +132,27 @@ Forks  🍴 : {forks_count}
 License  🛡️ : {repo_license_name}
         """
         issues_url = f"https://api.github.com/repos/{repo_full_name}/issues"
-        issues_button_url = re.sub(
-            "(api.)|(/repos)", "", issues_url)  # replace using regex
+        issues_button_url = self._api_repos_re.sub("", issues_url)
+        # replace using regex
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(issues_url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as issue_response_get:
                     issue_response = await issue_response_get.json()
         except:
-            issue_response = None
             raise RequestError
         try:
             issue_title = issue_response[0]['title']
-            issue_link = issue_response[0]['url']
-            issue_link = re.sub("(api.)|(/repos)", "",
-                                issue_link)  # replace using regex
+
+            issue_link = self._api_repos_re.sub(
+                "", issue_response[0]['url']
+            )
+            # replace using regex
+
             issue_desc = f"**[#{str(issue_response[0]['number'])}]({issue_link})** opened by {issue_response[0]['user']['login']}"
-            ISSUE_DETAILS = f"{issue_title}\n{issue_desc}" if issue_response != [
-            ] else "Looks like there are no issues for this repository!"
+            if len(issue_response) > 0:
+                ISSUE_DETAILS = f"{issue_title}\n{issue_desc}"
+            else:
+                ISSUE_DETAILS = "Looks like there are no issues for this repository!"
         except IndexError:
             ISSUE_DETAILS = "Looks like there are no issues for this repository!"
         repo_topics = data2["topics"]
@@ -167,28 +162,40 @@ License  🛡️ : {repo_license_name}
 ```
         """
         repo_button = create_button(
-            style=ButtonStyle.URL, label="Go to Repository", url=repo_url)
+            style=ButtonStyle.URL, label="Go to Repository",
+            url=repo_url
+        )
         issue_button = create_button(
-            style=ButtonStyle.URL, label="View Issues", url=issues_button_url)
-        self.embed_action_row = create_actionrow(issue_button, repo_button)
-        self.repo_embed = discord.Embed(title=repo_full_name, url=repo_url,
-                                        description=repo_description, color=0xd95025, timestamp=ctx.message.created_at)
+            style=ButtonStyle.URL, label="View Issues",
+            url=issues_button_url
+        )
+        self.embed_action_row = create_actionrow(
+            issue_button, repo_button
+        )
+        self.repo_embed = discord.Embed(
+            title=repo_full_name, url=repo_url,
+            description=repo_description, color=0xd95025,
+            timestamp=ctx.message.created_at
+        )
         self.repo_embed.set_thumbnail(url=repo_owner_image)
         self.repo_embed.add_field(
-            name="Language", value=repo_language, inline=True)
+            name="Language", value=repo_language, inline=True
+        )
         self.repo_embed.add_field(
-            name="Stars", value=stargazers_count, inline=True)
+            name="Stars", value=stargazers_count, inline=True
+        )
         self.repo_embed.add_field(
-            name="Details", value=REPO_DETAILS, inline=False)
+            name="Details", value=REPO_DETAILS, inline=False
+        )
         self.repo_embed.add_field(
-            name="Latest Issues", value=ISSUE_DETAILS, inline=False)
+            name="Latest Issues", value=ISSUE_DETAILS, inline=False
+        )
         self.repo_embed.set_footer(text="Repo Finder Bot")
-        # this is dumb code, I know. Just determines if there are any topics. If not, skip adding to embed
-        if " ".join(repo_topics).replace(" ", "") != "":
+
+        if len(list_of_all_topics.replace(" ", "")) > 0:
             self.repo_embed.add_field(
                 name="Topics", value=REPO_TOPICS_LIST, inline=False)
 
-        return
     # END process_embed
 
     # Find a repo by optional topic
@@ -199,11 +206,10 @@ License  🛡️ : {repo_license_name}
         if topics is None:
             topics = ["hacktoberfest", ]
         elif "," in topics:  # if user separates by comma, split and strip spaces
-            topics = topics.split(",")
-            topics = [s.strip() for s in topics]
+            topics = [s.strip() for s in topics.split(",")]
         elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
             # topics = " ".join(topics.split(" "))
-            topics = re.sub("\s\s+", " ", topics)
+            topics = self._whitespace_re.sub(" ", topics)
             topics = topics.replace(" ", ",").split(",")
         else:
             topics = [topics, ]
@@ -218,11 +224,15 @@ License  🛡️ : {repo_license_name}
             # FIX: Logs random exceptions to the console
             print(e)
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
+            return
 
         if resp["total_count"] == 0:
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
+            print("start processing")
             await self.process_embed(resp, ctx)
+            print("stop processing")
+            print(self.repo_embed, self.repo_embed.to_dict())
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
 
     # Find a repo by language and optional topic
@@ -239,10 +249,9 @@ rf.repolang \"python\"
         else:
             # languages = languages.replace(" ", "").split(",")
             if "," in languages:  # if user separates by comma, split and strip spaces
-                languages = languages.split(",")
-                languages = [s.strip() for s in languages]
+                languages = [s.strip() for s in languages.split(",")]
             elif " " in languages:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
-                languages = re.sub("\s\s+", " ", languages)
+                languages = self._whitespace_re.sub(" ", languages)
                 languages = languages.replace(" ", ",").split(",")
             else:
                 languages = [languages, ]
@@ -253,13 +262,12 @@ rf.repolang \"python\"
 
             if topics:
                 if "," in topics:  # if user separates by comma, split and strip spaces
-                    topics = topics.split(",")
-                    topics = [s.strip() for s in topics]
+                    topics = [s.strip() for s in topics.split(",")]
                 elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
-                    topics = re.sub("\s\s+", " ", topics)
+                    topics = self._whitespace_re.sub(" ", topics)
                     topics = topics.replace(" ", ",").split(",")
                 else:
-                    topics = [topics, ]
+                    topics = [topics]
                 payload["topics"] = topics
 
             try:
@@ -268,6 +276,7 @@ rf.repolang \"python\"
                 # FIX: Logs random exceptions to the console
                 print(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
+                return
 
             if resp["total_count"] == 0:
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
