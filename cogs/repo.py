@@ -111,13 +111,14 @@ class Finder(commands.Cog):
 
     # Process the search_requester response into an embed we can send
     async def process_embed(self, resp, ctx):
+        print("process embed call")
         data2 = random.choice(resp["items"])
         repo_full_name = data2["full_name"]
         repo_description = data2["description"]
         repo_language = data2["language"]
         repo_owner_image = data2["owner"]["avatar_url"]
         repo_url = data2["html_url"]
-        if "license" in data2 and "name" in data2["liscense"]:
+        if "license" in data2 and "name" in data2["license"]:
             repo_license_name = data2["license"]["name"]
         else:
             repo_license_name = "None"
@@ -228,7 +229,10 @@ License  🛡️ : {repo_license_name}
         if resp["total_count"] == 0:
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
+            print("start processing")
             await self.process_embed(resp, ctx)
+            print("stop processing")
+            print(self.repo_embed, self.repo_embed.to_dict())
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
 
     # Find a repo by language and optional topic
