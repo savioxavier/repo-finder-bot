@@ -2,6 +2,9 @@
 Master script for the bot
 """
 
+# Debug mode
+DEBUG=False
+
 from datetime import date
 import os
 import logging
@@ -14,11 +17,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure logging level here
+# Configure logging
 logging.basicConfig(
-    level=logging.INFO, #  Set your preferred logging level here
-    format="[%(asctime)s][%(levelname)s] %(message)s",
+    level=logging.DEBUG if DEBUG == True else logging.INFO,
+    format="[%(asctime)s][%(levelname)7s][%(funcName)20s][%(lineno)4s] %(message)s" if DEBUG == True else "[%(asctime)s][%(levelname)7s] %(message)s",
     datefmt="%I:%M.%S%p")
+logging.warning(f"Debug mode is {DEBUG}")
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 TOKEN = os.environ.get("TOKEN")
