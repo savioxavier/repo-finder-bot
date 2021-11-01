@@ -36,7 +36,7 @@ class Meta(commands.Cog):
     async def on_ready(self):
         "Function to determine what commands are to be if bot is connected to Discord"
 
-        logging.info("Info command registered - Meta cog up!")
+        logging.info("Meta up!")
 
     @commands.command(name="info")
     async def comand_botinfo(self, ctx):
