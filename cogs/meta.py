@@ -45,25 +45,31 @@ class Meta(commands.Cog):
             title="Bot Info",
             value="Information about the Repo Finder bot",
             color=0xd95025,
-            timestamp=ctx.message.created_at)
+            timestamp=ctx.message.created_at
+        )
 
         info.set_author(
-            name=f"{self.client.user.name}#{self.client.user.discriminator}", icon_url=self.client.user.avatar_url)
+            name=f"{self.client.user.name}#{self.client.user.discriminator}",
+            icon_url=self.client.user.avatar_url
+        )
 
         uptime = str(datetime.timedelta(
-            seconds=int(round(time.time() - bot_start_time))))
+            seconds=int(round(time.time() - bot_start_time)))
+        )
 
         info.add_field(name="Uptime", value=uptime, inline=False)
         info.add_field(name="Default prefix", value="`rf.`", inline=False)
         info.add_field(name="Language used", value="Python", inline=False)
         info.add_field(name="Created by", value="Skyascii#1860", inline=False)
         info.add_field(name="Like this bot?",
-                       value="Considering starring this project on [GitHub](https://github.com/savioxavier/repo-finder-bot)!", inline=False)
+                       value="Considering starring this project on [GitHub](https://github.com/savioxavier/repo-finder-bot)!",
+                       inline=False)
         info.set_thumbnail(url=self.client.user.avatar_url)
         info.set_footer(text="Repo Finder Bot")
 
         source_code_button = create_actionrow(create_button(
-            style=ButtonStyle.URL, label="View Source Code", url="https://github.com/savioxavier/repo-finder-bot"))
+            style=ButtonStyle.URL, label="View Source Code", url="https://github.com/savioxavier/repo-finder-bot")
+        )
 
         await ctx.send(embed=info, components=[source_code_button])
 
