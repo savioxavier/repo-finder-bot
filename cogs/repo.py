@@ -4,8 +4,12 @@ Repo Finder command script for the bot
 
 import logging
 import os
+import sys
 import random
 import re
+
+from cogs.src.logutil import CustomFormatter
+from cogs.src.common import DEBUG
 
 import aiohttp
 import discord
@@ -21,10 +25,17 @@ GH_TOKEN = str(os.environ.get("GH_TOKEN"))
 
 __GUILD_IDS__ = [DEV_GUILD]
 
+# Configure logging for this (main.py) handler
+logger = logging.Logger("repo.py")
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
 
 class RequestError(Exception):
-    logging.warning("RequestError was raised")
-    logging.debug(Exception)
+    if str(sys.exc_info()[2]) != "None": # Will discord_error throw any tracebacks?
+        logger.warning("RequestError was raised") # Edit: ok I googled it. Yes it does
+        logger.debug(sys.exc_info()[2]) # Edit 2: Is this code even good? Probably not, but it prevents it from being called on script boot
     pass
 
 
@@ -47,11 +58,11 @@ class Finder(commands.Cog):
     async def on_ready(self):
         "Function to determine what commands are to be if bot is connected to Discord"
 
-        logging.info("Repo cog up!")
+        logger.info("Repo cog up!")
 
     @staticmethod
     def build_query(key, value):
-        logging.debug(f"Building a query with key:\n{key} : {value}")
+        logger.debug(f"Building a query with key:\n{key} : {value}")
         raw_query = ""
         if key in ["topics", "languages"]:
             if len(value) > 1:
@@ -96,15 +107,15 @@ class Finder(commands.Cog):
             https://api.github.com/search/repositories?q=topic:hacktoberfest+topic:hacktoberfest2021+language:python+language:javascript+'add command handler'
                                          {method}              {topics}                              {languages}                         {searchQuery}
         """
-        logging.debug(f"Handling a search request:\n{payload}")
+        logger.debug(f"Handling a search request:\n{payload}")
         raw_query = "".join(self.build_query(key, payload[key]) for key in payload)
 
         url = "https://api.github.com/search/{}?q={}&per_page=75".format(
             payload["method"], requote_uri(raw_query))  # encode and build the query
-        logging.debug(f"URL built: {url}")
+        logger.debug(f"URL built: {url}")
 
         try:
-            logging.debug("Sending query...")
+            logger.debug("Sending query...")
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
                 async with session.get(url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as response:
                     return await response.json()
@@ -114,7 +125,7 @@ class Finder(commands.Cog):
 
     # Process the search_requester response into an embed we can send
     async def process_embed(self, resp, ctx):
-        logging.debug("Processing embed:\n%s\n...".format(list(resp)[0]))
+        logger.debug("Processing embed:\n%s\n...".format(list(resp)[0]))
         data2 = random.choice(resp["items"])
         repo_full_name = data2["full_name"]
         repo_description = data2["description"]
@@ -138,7 +149,7 @@ License  🛡️ : {repo_license_name}
         issues_button_url = self._api_repos_re.sub("", issues_url)
         # replace using regex
         try:
-            logging.debug(f"Sending a query to repo {repo_full_name} for issues...")
+            logger.debug(f"Sending a query to repo {repo_full_name} for issues...")
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
                 async with session.get(issues_url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as issue_response_get:
                     issue_response = await issue_response_get.json()
@@ -166,7 +177,7 @@ License  🛡️ : {repo_license_name}
 ```
         """
 
-        logging.debug("Building embed...")
+        logger.debug("Building embed...")
         repo_button = create_button(
             style=ButtonStyle.URL, label="Go to Repository",
             url=repo_url
@@ -201,7 +212,7 @@ License  🛡️ : {repo_license_name}
         if len(list_of_all_topics.replace(" ", "")) > 0:
             self.repo_embed.add_field(
                 name="Topics", value=REPO_TOPICS_LIST, inline=False)
-        logging.debug("Embed built")
+        logger.debug("Embed built")
 
     # END process_embed
 
@@ -209,8 +220,8 @@ License  🛡️ : {repo_license_name}
     @commands.command(name="repo")
     @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repo(self, ctx, *, topics: str = None):
-        logging.info(f"{ctx.message.author} - intiated repo command")
-        logging.debug(f"args: {topics}")
+        logger.info(f"{ctx.message.author} - initiated repo command")
+        logger.debug(f"args: {topics}")
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
             topics = ["hacktoberfest", ]
@@ -228,19 +239,19 @@ License  🛡️ : {repo_license_name}
         }
 
         try:
-            logging.info("Payload built. Sending to search_requester...")
+            logger.info("Payload built. Sending to search_requester...")
             resp = await self.search_requester(payload)
         except RequestError as e:
             # FIX: Logs random exceptions to the console
-            logging.warning(e)
+            logger.warning(e)
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             return
 
         if resp["total_count"] == 0:
-            logging.warning("Response returned zero results")
+            logger.warning("Response returned zero results")
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
-            logging.debug("Processing results...\n%s\n...".format(list(resp)[0]))
+            logger.debug("Processing results...\n%s\n...".format(list(resp)[0]))
             await self.process_embed(resp, ctx)
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=self.repo_embed, components=[self.embed_action_row])
 
@@ -251,14 +262,14 @@ License  🛡️ : {repo_license_name}
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         
         if languages is None:
-            logging.debug(f"{ctx.message.author} - initiated repolang with no required args")
+            logger.debug(f"{ctx.message.author} - initiated repolang with no required args")
             first_message = await ctx.send("""You need to specify a language!
 Example:```fix
 rf.repolang \"python\"
 ```""")
         else:
-            logging.info(f"{ctx.message.author} - initiated repolang")
-            logging.debug(f"args: {languages} ; {topics}")
+            logger.info(f"{ctx.message.author} - initiated repolang")
+            logger.debug(f"args: {languages} ; {topics}")
             first_message = await ctx.send("Fetching a repo, just for you!")
 
             # languages = languages.replace(" ", "").split(",")
@@ -285,11 +296,11 @@ rf.repolang \"python\"
                 payload["topics"] = topics
 
             try:
-                logging.info("Payload built. Sending to search_requester...")
+                logger.info("Payload built. Sending to search_requester...")
                 resp = await self.search_requester(payload)
             except RequestError as e:
                 # FIX: Logs random exceptions to the console
-                logging.warning(e)
+                logger.warning(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
                 return
 
