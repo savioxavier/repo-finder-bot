@@ -2,6 +2,7 @@
 Master script for the bot
 """
 
+
 # Debug mode
 DEBUG=False
 
@@ -19,9 +20,13 @@ load_dotenv()
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG if DEBUG == True else logging.INFO,
-    format="[%(asctime)s][%(levelname)7s][%(funcName)20s][%(lineno)4s] %(message)s" if DEBUG == True else "[%(asctime)s][%(levelname)7s] %(message)s",
-    datefmt="%I:%M.%S%p")
+    level=logging.DEBUG if DEBUG else logging.INFO,
+    format="[%(asctime)s][%(levelname)7s][%(funcName)20s][%(lineno)4s] %(message)s"
+    if DEBUG
+    else "[%(asctime)s][%(levelname)7s] %(message)s",
+    datefmt="%I:%M.%S%p",
+)
+
 logging.warning(f"Debug mode is {DEBUG}")
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
@@ -140,10 +145,34 @@ async def on_command_error(ctx: commands.Context, error):
         logging.debug(f"{ctx.message.author} - initiated a command on cooldown")
         await ctx.send(f"This command is on cooldown. Try again after `{round(error.retry_after)}` seconds.", delete_after=5)
     else:
+        await ctx.send(f"A discord.py command error occured:```{error}```Try your command again")
         logging.warning(f"A discord.py command error occured:\n{error}")
 
-client.load_extension("cogs.repo")
-client.load_extension("cogs.meta")
+client.load_extension("cogs.core")
 
-logging.info("Cog loading complete")
+command_modules = [
+    module[:-3]
+    for module in os.listdir(f"{os.path.dirname(__file__)}/cogs/src/commands")
+    if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
+]
+
+if command_modules:
+    logging.info('Importing {} cogs: {}'.format(
+        len(command_modules),
+        ', '.join(command_modules)
+    ))
+else:
+    logging.warning("Could not import any cogs!")
+
+
+for module in command_modules:
+    try:
+        client.load_extension("cogs.src.commands." + module)
+    except Exception as e:
+        logging.error(f"Could not import cog {module}: \n{e}")
+
+logging.info("Cog init complete. Cogs should be coming up soon")
+logging.debug("\n\nCogs incoming:\n{}\n\n".format(
+    ',\n'.join(command_modules)
+))
 client.run(TOKEN)
