@@ -7,6 +7,7 @@ import os
 import sys
 import random
 import re
+from cogs.src import logutil
 
 from cogs.src.logutil import CustomFormatter
 from cogs.src.common import DEBUG
@@ -25,12 +26,8 @@ GH_TOKEN = str(os.environ.get("GH_TOKEN"))
 
 __GUILD_IDS__ = [DEV_GUILD]
 
-# Configure logging for this (main.py) handler
-logger = logging.Logger("repo.py")
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG if DEBUG else logging.INFO)
-ch.setFormatter(CustomFormatter())
-logger.addHandler(ch)
+# Configure logging for this (repo.py) handler
+logger = logutil.initLogger("repo.py")
 
 class RequestError(Exception):
     if str(sys.exc_info()[2]) != "None": # Will discord_error throw any tracebacks?

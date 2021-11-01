@@ -9,6 +9,7 @@ import discord
 from discord.enums import Status
 from discord.ext import commands
 from discord_slash import SlashCommand
+from cogs.src import logutil
 
 from cogs.src.logutil import CustomFormatter
 from cogs.src.common import USE_COLOR, DEBUG
@@ -30,11 +31,7 @@ if USE_COLOR:
     hdlr.setFormatter(CustomFormatter())
 
 # Configure logging for this (main.py) handler
-logger = logging.Logger("main.py")
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG if DEBUG else logging.INFO)
-ch.setFormatter(CustomFormatter())
-logger.addHandler(ch)
+logger = logutil.initLogger("main.py")
 
 logger.warning(f"Debug mode is {DEBUG}")
 

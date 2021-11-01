@@ -1,23 +1,13 @@
 import logging
 from .common import DEBUG
 
-"""
-        from common import USE_COLOR, DEBUG
-        logging.basicConfig(
-            level=logging.DEBUG if DEBUG else logging.INFO,
-            format="[%(asctime)s][%(levelname)7s][%(funcName)20s][%(lineno)4s] %(message)s"
-            if DEBUG
-            else "[%(asctime)s][%(levelname)7s] %(message)s",
-            datefmt="%I:%M.%S%p",
-        )
-
-
-        if USE_COLOR:
-            root = logging.getLogger()
-            hdlr = root.handlers[0]
-            hdlr.setFormatter(CustomFormatter())
-
-"""
+def initLogger(name = "root"):
+    logger = logging.Logger(name)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+    ch.setFormatter(CustomFormatter())
+    logger.addHandler(ch)
+    return logger
 
 class CustomFormatter(logging.Formatter):
     grey = "\x1b[38;1m"
