@@ -2,14 +2,16 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 from os.path import dirname as dn
 
-import logging
 from cogs.core import RequestError
 
 from cogs.src import (
     requester,
     build_query,
-    process_embed
+    process_embed,
+    logutil
 )
+
+logger = logutil.initLogger("repo.py")
 
 class Repo(commands.Cog):
 
@@ -18,14 +20,14 @@ class Repo(commands.Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        logging.info("Repo command registered")
+        logger.info("Repo command registered")
 
     # Find a repo by optional topic
     @commands.command(name="repo")
     @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repo(self, ctx, *, topics: str = None):
-        logging.info(f"{ctx.message.author} - intiated repo command")
-        logging.debug(f"args: {topics}")
+        logger.info(f"{ctx.message.author} - intiated repo command")
+        logger.debug(f"args: {topics}")
         first_message = await ctx.send("Fetching a repo, just for you!")
         if topics is None:
             topics = ["hacktoberfest", ]
@@ -43,19 +45,19 @@ class Repo(commands.Cog):
         }
 
         try:
-            logging.info("Payload built. Sending to search_requester...")
+            logger.info("Payload built. Sending to search_requester...")
             resp = await requester.requester(payload)
         except RequestError as e:
             # FIX: Logs random exceptions to the console
-            logging.warning(e)
+            logger.warning(e)
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             return
 
         if resp["total_count"] == 0:
-            logging.warning("Response returned zero results")
+            logger.warning("Response returned zero results")
             await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
         else:
-            # logging.debug("Processing results...\n{}\n...".format(list(resp)[0]))
+            # logger.debug("Processing results...\n{}\n...".format(list(resp)[0]))
             repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=repo_embed, components=[embed_action_row])
 

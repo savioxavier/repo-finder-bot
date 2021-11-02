@@ -3,8 +3,10 @@ from requests.utils import requote_uri
 from cogs.core import RequestError, GH_TOKEN
 from cogs.src import build_query
 
-import logging
 import aiohttp
+
+from . import logutil
+logger = logutil.initLogger("requester.py")
 
 """ This will handle all search requests from now on. Provides modularity for future search commands """
 async def requester(payload):
@@ -27,15 +29,15 @@ async def requester(payload):
         https://api.github.com/search/repositories?q=topic:hacktoberfest+topic:hacktoberfest2021+language:python+language:javascript+'add command handler'
                                         {method}              {topics}                              {languages}                         {searchQuery}
     """
-    logging.debug(f"Handling a search request:\n{payload}")
+    logger.debug(f"Handling a search request:\n{payload}")
     raw_query = "".join(build_query.build_query(key, payload[key]) for key in payload)
 
     url = "https://api.github.com/search/{}?q={}&per_page=75".format(
         payload["method"], requote_uri(raw_query))  # encode and build the query
-    logging.debug(f"URL built: {url}")
+    logger.debug(f"URL built: {url}")
 
     try:
-        logging.debug("Sending query...")
+        logger.debug("Sending query...")
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
             async with session.get(url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as response:
                 return await response.json()

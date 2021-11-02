@@ -1,5 +1,3 @@
-
-
 from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (
     create_actionrow,
@@ -9,17 +7,19 @@ from discord_slash.utils.manage_components import (
 from cogs.core import RequestError, GH_TOKEN
 
 import discord
-import logging
 import random
 import aiohttp
 import re
+
+from . import logutil
+logger = logutil.initLogger("processs_embed.py")
 
 # Process the search_requester response into an embed we can send
 async def process_embed(resp, ctx):
     _api_repos_re = re.compile("(api.)|(/repos)")
     _whitespace_re = re.compile(r"\s\s+")
 
-    logging.debug("Processing embed:\n{}\n...".format(list(resp)[0]))
+    logger.debug("Processing embed:\n{}\n...".format(list(resp)[0]))
     data2 = random.choice(resp["items"])
     repo_full_name = data2["full_name"]
     repo_description = data2["description"]
@@ -43,7 +43,7 @@ License  🛡️ : {repo_license_name}
     issues_button_url = _api_repos_re.sub("", issues_url)
     # replace using regex
     try:
-        logging.debug(f"Sending a query to repo {repo_full_name} for issues...")
+        logger.debug(f"Sending a query to repo {repo_full_name} for issues...")
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
             async with session.get(issues_url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as issue_response_get:
                 issue_response = await issue_response_get.json()
@@ -71,7 +71,7 @@ License  🛡️ : {repo_license_name}
 ```
     """
 
-    logging.debug("Building embed...")
+    logger.debug("Building embed...")
     repo_button = create_button(
         style=ButtonStyle.URL, label="Go to Repository",
         url=repo_url
@@ -106,7 +106,7 @@ License  🛡️ : {repo_license_name}
     if len(list_of_all_topics.replace(" ", "")) > 0:
         repo_embed.add_field(
             name="Topics", value=REPO_TOPICS_LIST, inline=False)
-    logging.debug("Embed built")
+    logger.debug("Embed built")
 
     return repo_embed, embed_action_row
 

@@ -1,5 +1,5 @@
 # Print debug verbose messages
-DEBUG=False
+DEBUG=True
 
 # Use color while logging
 USE_COLOR=True

@@ -19,7 +19,8 @@ from cogs.src import (
 from cogs.core import RequestError
 """
 
-import logging # Highly recommended - we suggest providing proper debug logging
+from .. import logutil # Highly recommended - we suggest providing proper debug logging
+logger = logutil.initLogger("template.py") # change this - this labels log messages for debug mode
 
 class Command(commands.Cog): # Rename this class to whatever you'd like. Rename it again below at setup()
     def __init__(self, client):
@@ -27,7 +28,7 @@ class Command(commands.Cog): # Rename this class to whatever you'd like. Rename 
 
     @Cog.listener()
     async def on_ready(self): # code to execute when cog has been loaded
-        logging.info("Command cog registered")
+        logger.info("Command cog registered")
 
     @commands.command(name="command") # set this to your command name. The bot will respond to this with the prefix next to it. ex: rf.command
     async def command(self, ctx, *, args: str = None): # Pass all arguments as "args" and default to NoneType

@@ -1,8 +1,9 @@
-import logging
+from . import logutil
+logger = logutil.initLogger("build_query.py")
 
 # @staticmethod
 def build_query(key, value):
-    logging.debug(f"Building a query with key:\n{key} : {value}")
+    logger.debug(f"Building a query with key:\n{key} : {value}")
     raw_query = ""
     if key in ["topics", "languages"]:
         if len(value) > 1:

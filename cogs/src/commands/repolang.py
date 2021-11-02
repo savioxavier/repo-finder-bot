@@ -2,13 +2,15 @@ from discord.ext import commands
 Cog = commands.Cog
 from cogs import core
 
-import logging, re
+import re
 
 from cogs.src import (
     requester,
     build_query,
-    process_embed
+    process_embed,
+    logutil
 )
+logger = logutil.initLogger("repolang.py")
 
 class RepoLang(commands.Cog):
 
@@ -20,7 +22,7 @@ class RepoLang(commands.Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        logging.info("RepoLang command registered")
+        logger.info("RepoLang command registered")
 
     # Find a repo by language and optional topic
     # ex. rf.repo "c,py,php" "hacktoberfest"
@@ -29,14 +31,14 @@ class RepoLang(commands.Cog):
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         
         if languages is None:
-            logging.debug(f"{ctx.message.author} - initiated repolang with no required args")
+            logger.debug(f"{ctx.message.author} - initiated repolang with no required args")
             first_message = await ctx.send("""You need to specify a language!
     Example:```fix
     rf.repolang \"python\"
     ```""")
         else:
-            logging.info(f"{ctx.message.author} - initiated repolang")
-            logging.debug(f"args: {languages} ; {topics}")
+            logger.info(f"{ctx.message.author} - initiated repolang")
+            logger.debug(f"args: {languages} ; {topics}")
             first_message = await ctx.send("Fetching a repo, just for you!")
 
             # languages = languages.replace(" ", "").split(",")
@@ -63,11 +65,11 @@ class RepoLang(commands.Cog):
                 payload["topics"] = topics
 
             try:
-                logging.info("Payload built. Sending to search_requester...")
+                logger.info("Payload built. Sending to search_requester...")
                 resp = await requester.requester(payload)
             except core.RequestError as e:
                 # FIX: Logs random exceptions to the console
-                logging.warning(e)
+                logger.warning(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
                 return
 
