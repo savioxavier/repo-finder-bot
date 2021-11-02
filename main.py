@@ -3,7 +3,6 @@ Master script for the bot
 """
 
 import os
-import logging
 
 import discord
 from discord.enums import Status
@@ -11,24 +10,10 @@ from discord.ext import commands
 from discord_slash import SlashCommand
 from cogs.src import logutil
 
-from cogs.src.logutil import CustomFormatter
-from cogs.src.common import USE_COLOR, DEBUG
+from cogs.src.common import DEBUG
 from dotenv import load_dotenv
 
 load_dotenv()
-
-logging.basicConfig(
-    level=logging.DEBUG if DEBUG else logging.INFO,
-    format="[%(asctime)s][%(levelname)7s][%(funcName)20s][%(lineno)4s] %(message)s",
-    # if DEBUG
-    # else "[%(asctime)s][%(levelname)7s] %(message)s", # this stupid code doesn't work anymore. Put it in logutil.py
-    datefmt="%I:%M.%S%p",
-)
-
-if USE_COLOR:
-    root = logging.getLogger()
-    hdlr = root.handlers[0]
-    hdlr.setFormatter(CustomFormatter())
 
 # Configure logging for this (main.py) handler
 logger = logutil.initLogger("main.py")
@@ -152,9 +137,33 @@ async def on_command_error(ctx: commands.Context, error):
         await ctx.send(f"This command is on cooldown. Try again after `{round(error.retry_after)}` seconds.", delete_after=5)
     else:
         logger.warning(f"A discord.py command error occured:\n{error}")
+        await ctx.send(f"A discord.py command error occured:```{error}```Try your command again")
 
-client.load_extension("cogs.repo")
-client.load_extension("cogs.meta")
+client.load_extension("cogs.core")
 
-logger.info("Cog loading complete")
+command_modules = [
+    module[:-3]
+    for module in os.listdir(f"{os.path.dirname(__file__)}/cogs/src/commands")
+    if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
+]
+
+if command_modules:
+    logger.info('Importing {} cogs: {}'.format(
+        len(command_modules),
+        ', '.join(command_modules)
+    ))
+else:
+    logger.warning("Could not import any cogs!")
+
+# dynamically load all cogs found in cogs/src/commmands as cog extensions
+for module in command_modules:
+    try:
+        client.load_extension("cogs.src.commands." + module)
+    except Exception as e:
+        logger.error(f"Could not import cog {module}: \n{e}")
+
+logger.info("Cog init complete. Cogs should be coming up soon")
+logger.debug("\n\nCogs incoming:\n{}\n\n".format(
+    ',\n'.join(command_modules)
+))
 client.run(TOKEN)
