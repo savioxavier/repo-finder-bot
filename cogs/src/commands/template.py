@@ -19,7 +19,7 @@ from cogs.src import (
 from cogs.core import RequestError
 """
 
-from .. import logutil # Highly recommended - we suggest providing proper debug logging
+from cogs.src import logutil # Highly recommended - we suggest providing proper debug logging
 logger = logutil.initLogger("template.py") # change this - this labels log messages for debug mode
 
 class Command(commands.Cog): # Rename this class to whatever you'd like. Rename it again below at setup()
