@@ -67,5 +67,14 @@ Just check out the Issues pane for potential issues and submit a PR to solve the
 > 
 > If you get errors related to missing token environment variables, run `source .env`
 
+## Contributors
+
+Thanks to all the contributors, without whom this project would not have been possible.
+
+<a href="https://github.com/savioxavier/repo-finder-bot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=savioxavier/repo-finder-bot" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 Icons made by [Freepik](https://www.freepik.com) from [Flaticon](https://www.flaticon.com/).
