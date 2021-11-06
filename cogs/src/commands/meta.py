@@ -59,9 +59,17 @@ class Meta(commands.Cog):
             icon_url=self.client.user.avatar_url
         )
 
-        uptime = str(datetime.timedelta(
+        uptime = datetime.timedelta(
             seconds=int(round(time.time() - bot_start_time)))
-        )
+
+        def strfdelta(tdelta, fmt):
+            d = {"days": tdelta.days}
+            d["hours"], rem = divmod(tdelta.seconds, 3600)
+            d["minutes"], d["seconds"] = divmod(rem, 60)
+            return fmt.format(**d)
+
+        uptime = strfdelta(
+            uptime, "{days} days, {hours} hours and {minutes} minutes")
 
         info.add_field(name="Uptime", value=uptime, inline=False)
         info.add_field(name="Default prefix", value="`rf.`", inline=False)
