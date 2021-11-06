@@ -1,13 +1,16 @@
 import logging
+
 from .common import DEBUG
 
-def initLogger(name = "root"):
+
+def initLogger(name="root"):
     logger = logging.Logger(name)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG if DEBUG else logging.INFO)
     ch.setFormatter(CustomFormatter())
     logger.addHandler(ch)
     return logger
+
 
 class CustomFormatter(logging.Formatter):
     grey = "\x1b[38;1m"
@@ -23,13 +26,15 @@ class CustomFormatter(logging.Formatter):
         logging.INFO: grey + f"{reset}[%(asctime)s]{grey}[%(levelname)-7s][%(name)-14s]{reset}[{red}%(lineno)4s{reset}] %(message)s" + reset,
         logging.WARNING: yellow + f"[%(asctime)s][%(levelname)-7s][%(name)-14s][{red}%(lineno)4s{reset}{yellow}] %(message)s" + reset,
         logging.ERROR: red + f"[%(asctime)s][%(levelname)-7s][%(name)-14s][%(lineno)4s] %(message)s" + reset,
-        logging.CRITICAL: bold_red + f"[%(asctime)s][%(levelname)-7s][%(name)-14s][%(lineno)4s] %(message)s" + reset
+        logging.CRITICAL: bold_red +
+        f"[%(asctime)s][%(levelname)-7s][%(name)-14s][%(lineno)4s] %(message)s" + reset
     } if DEBUG else {
         logging.DEBUG: reset,
         logging.INFO: grey + f"[%(asctime)s][%(levelname)7s] %(message)s" + reset,
         logging.WARNING: yellow + f"[%(asctime)s][%(levelname)7s] %(message)s" + reset,
         logging.ERROR: red + f"[%(asctime)s][%(levelname)7s] %(message)s" + reset,
-        logging.CRITICAL: bold_red + f"[%(asctime)s][%(levelname)7s] %(message)s" + reset
+        logging.CRITICAL: bold_red +
+        f"[%(asctime)s][%(levelname)7s] %(message)s" + reset
     }
     # Documenting my dwindling sanity here
 

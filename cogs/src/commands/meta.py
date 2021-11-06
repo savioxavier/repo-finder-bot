@@ -5,8 +5,6 @@ Meta commands script for the bot
 import datetime
 import os
 import time
-from cogs.src import logutil
-logger = logutil.initLogger("meta.py")
 
 import discord
 from discord.ext import commands
@@ -14,6 +12,11 @@ from discord.ext.commands import Cog
 from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (create_actionrow,
                                                    create_button)
+
+from cogs.src import logutil
+
+logger = logutil.initLogger("meta.py")
+
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 

@@ -1,20 +1,21 @@
-from discord_slash.model import ButtonStyle
-from discord_slash.utils.manage_components import (
-    create_actionrow,
-    create_button
-)
-
-from cogs.core import RequestError, GH_TOKEN
-
-import discord
 import random
-import aiohttp
 import re
 
+import aiohttp
+import discord
+from discord_slash.model import ButtonStyle
+from discord_slash.utils.manage_components import (create_actionrow,
+                                                   create_button)
+
+from cogs.core import GH_TOKEN, RequestError
+
 from . import logutil
+
 logger = logutil.initLogger("processs_embed.py")
 
 # Process the search_requester response into an embed we can send
+
+
 async def process_embed(resp, ctx):
     _api_repos_re = re.compile("(api.)|(/repos)")
     _whitespace_re = re.compile(r"\s\s+")

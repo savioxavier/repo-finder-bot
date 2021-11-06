@@ -1,7 +1,10 @@
 from . import logutil
+
 logger = logutil.initLogger("build_query.py")
 
 # @staticmethod
+
+
 def build_query(key, value):
     logger.debug(f"Building a query with key:\n{key} : {value}")
     raw_query = ""
@@ -21,7 +24,7 @@ def build_query(key, value):
     elif key == "issue":
         if value:
             raw_query += ("is:issue+" if value["type"] == "issue" else "is:pr+"
-                            ) + ("is:open+" if value["isOpen"] is True else "")
+                          ) + ("is:open+" if value["isOpen"] is True else "")
     elif key == "searchQuery":
         if value:
             raw_query += "\"{}\"".format(value) if value else ""
