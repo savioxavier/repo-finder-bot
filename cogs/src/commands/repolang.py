@@ -33,9 +33,9 @@ class RepoLang(commands.Cog):
             logger.debug(
                 f"{ctx.message.author} - initiated repolang with no required args")
             first_message = await ctx.send("""You need to specify a language!
-    Example:```fix
-    rf.repolang \"python\"
-    ```""")
+Example:```fix
+rf.repolang \"python\"
+```""")
         else:
             logger.info(f"{ctx.message.author} - initiated repolang")
             logger.debug(f"args: {languages} ; {topics}")
