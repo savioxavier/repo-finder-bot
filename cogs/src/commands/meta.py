@@ -81,11 +81,16 @@ class Meta(commands.Cog):
         info.set_thumbnail(url=self.client.user.avatar_url)
         info.set_footer(text="Repo Finder Bot")
 
-        source_code_button = create_actionrow(create_button(
-            style=ButtonStyle.URL, label="View Source Code", url="https://github.com/savioxavier/repo-finder-bot")
-        )
+        invite_bot_button = create_button(
+            style=ButtonStyle.URL, label="Invite Bot", url="https://discord.com/api/oauth2/authorize?client_id=772682311346159616&permissions=2147871808&scope=bot%20applications.commands")
 
-        await ctx.send(embed=info, components=[source_code_button])
+        source_code_button = create_button(
+            style=ButtonStyle.URL, label="View Source Code", url="https://github.com/savioxavier/repo-finder-bot")
+
+        embed_components = create_actionrow(
+            invite_bot_button, source_code_button)
+
+        await ctx.send(embed=info, components=[embed_components])
 
 
 def setup(bot):
