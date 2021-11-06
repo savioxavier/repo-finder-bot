@@ -1,14 +1,16 @@
+import aiohttp
 from requests.utils import requote_uri
 
-from cogs.core import RequestError, GH_TOKEN
+from cogs.core import GH_TOKEN, RequestError
 from cogs.src import build_query
 
-import aiohttp
-
 from . import logutil
+
 logger = logutil.initLogger("requester.py")
 
 """ This will handle all search requests from now on. Provides modularity for future search commands """
+
+
 async def requester(payload):
     """ Our payload structure example:
     payload = {
@@ -30,7 +32,8 @@ async def requester(payload):
                                         {method}              {topics}                              {languages}                         {searchQuery}
     """
     logger.debug(f"Handling a search request:\n{payload}")
-    raw_query = "".join(build_query.build_query(key, payload[key]) for key in payload)
+    raw_query = "".join(build_query.build_query(
+        key, payload[key]) for key in payload)
 
     url = "https://api.github.com/search/{}?q={}&per_page=75".format(
         payload["method"], requote_uri(raw_query))  # encode and build the query

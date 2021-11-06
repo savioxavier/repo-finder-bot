@@ -8,10 +8,10 @@ import discord
 from discord.enums import Status
 from discord.ext import commands
 from discord_slash import SlashCommand
-from cogs.src import logutil
-
-from cogs.src.common import DEBUG
 from dotenv import load_dotenv
+
+from cogs.src import logutil
+from cogs.src.common import DEBUG
 
 load_dotenv()
 
@@ -40,7 +40,8 @@ async def determine_prefix(bot, message):
     guild = message.guild
 
     if guild:
-        logger.debug(f"Custom prefix is '{custom_prefixes.get(guild.id, default_prefixes)}'")
+        logger.debug(
+            f"Custom prefix is '{custom_prefixes.get(guild.id, default_prefixes)}'")
         return custom_prefixes.get(guild.id, default_prefixes)
     else:
         logger.debug(f"Using default prefix '{default_prefixes}'")
@@ -61,7 +62,8 @@ slash = SlashCommand(client, sync_commands=True, sync_on_cog_reload=True)
 @client.event
 async def on_ready():
     "Function to determine what commands are to be if bot is connected to Discord"
-    logger.info(f"Logged in as {client.user.name}#{client.user.discriminator}!")
+    logger.info(
+        f"Logged in as {client.user.name}#{client.user.discriminator}!")
 
 
 @client.command()

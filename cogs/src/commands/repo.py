@@ -1,17 +1,13 @@
-from discord.ext import commands
-from discord.ext.commands import Cog
 from os.path import dirname as dn
 
-from cogs.core import RequestError
+from discord.ext import commands
+from discord.ext.commands import Cog
 
-from cogs.src import (
-    requester,
-    build_query,
-    process_embed,
-    logutil
-)
+from cogs.core import RequestError
+from cogs.src import build_query, logutil, process_embed, requester
 
 logger = logutil.initLogger("repo.py")
+
 
 class Repo(commands.Cog):
 
@@ -60,6 +56,7 @@ class Repo(commands.Cog):
             # logger.debug("Processing results...\n{}\n...".format(list(resp)[0]))
             repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
             await first_message.edit(content="Found a new repo matching topic(s) `{}`!".format(', '.join(topics)), embed=repo_embed, components=[embed_action_row])
+
 
 def setup(bot):
     bot.add_cog(Repo(bot))

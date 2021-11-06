@@ -1,16 +1,15 @@
-from discord.ext import commands
-Cog = commands.Cog
-from cogs import core
-
 import re
 
-from cogs.src import (
-    requester,
-    build_query,
-    process_embed,
-    logutil
-)
+from discord.ext import commands
+
+from cogs import core
+from cogs.src import build_query, logutil, process_embed, requester
+
+Cog = commands.Cog
+
+
 logger = logutil.initLogger("repolang.py")
+
 
 class RepoLang(commands.Cog):
 
@@ -29,13 +28,14 @@ class RepoLang(commands.Cog):
     @commands.command(name="repolang")
     @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
-        
+
         if languages is None:
-            logger.debug(f"{ctx.message.author} - initiated repolang with no required args")
+            logger.debug(
+                f"{ctx.message.author} - initiated repolang with no required args")
             first_message = await ctx.send("""You need to specify a language!
-    Example:```fix
-    rf.repolang \"python\"
-    ```""")
+Example:```fix
+rf.repolang \"python\"
+```""")
         else:
             logger.info(f"{ctx.message.author} - initiated repolang")
             logger.debug(f"args: {languages} ; {topics}")
@@ -78,6 +78,7 @@ class RepoLang(commands.Cog):
             else:
                 repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
                 await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=repo_embed, components=[embed_action_row])
+
 
 def setup(bot):
     bot.add_cog(RepoLang(bot))
