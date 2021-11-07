@@ -68,7 +68,7 @@ Please read CONTRIBUTING.md for more information on contributing and building a 
 > If you get errors related to missing token environment variables, run `source .env`
 
 
-- **How do I run this bot via Docker?**
+- **How do I run the bot via Docker?**
 
 > 1. Clone this repository
 > 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)
