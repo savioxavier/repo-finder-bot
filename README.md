@@ -34,19 +34,19 @@ Here's an example:
 
 There was a slight trouble trying to fetch data using slash commands but don't worry, slash commands will be added soon!
 
-- **Why is the code so bad?**
-
-It works.
-
-I'll fix it.
-
 - **Cool bot, can I add it to my server?**
 
 Of course you can! Just click [this link](https://discord.com/api/oauth2/authorize?client_id=772682311346159616&permissions=2147871808&scope=bot%20applications.commands) and select the server of your choice.
 
+- **Why is the code so bad?**
+
+Because we need you! A number of contributors are helping to expand and improve the code base. Why don't you join us?
+
 - **How can I contribute?**
 
 Just check out the Issues pane for potential issues and submit a PR to solve them. Of course, you can always submit regular PRs not linked to an issue and I'd be happy to accept them!
+
+Please read CONTRIBUTING.md for more information on contributing and building a development environment.
 
 
 - **How do I run the bot myself?**
@@ -68,7 +68,7 @@ Just check out the Issues pane for potential issues and submit a PR to solve the
 > If you get errors related to missing token environment variables, run `source .env`
 
 
-- **How do I run this via Docker?**
+- **How do I run this bot via Docker?**
 
 > 1. Clone this repository
 > 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)
