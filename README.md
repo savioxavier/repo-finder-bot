@@ -46,7 +46,7 @@ Because we need you! A number of contributors are helping to expand and improve 
 
 Just check out the Issues pane for potential issues and submit a PR to solve them. Of course, you can always submit regular PRs not linked to an issue and I'd be happy to accept them!
 
-Please read CONTRIBUTING.md for more information on contributing and building a development environment.
+Please read [CONTRIBUTING.md](https://github.com/savioxavier/repo-finder-bot/blob/main/CONTRIBUTING.md) for more information on contributing and building a development environment.
 
 
 - **How do I run the bot myself?**
