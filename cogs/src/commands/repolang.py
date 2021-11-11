@@ -1,8 +1,10 @@
 import re
+from os.path import dirname as dn
 
 from discord.ext import commands
+from discord.ext.commands import Cog
 
-from cogs import core
+from cogs.core import RequestError
 from cogs.src import build_query, logutil, process_embed, requester
 
 Cog = commands.Cog
@@ -23,23 +25,24 @@ class RepoLang(commands.Cog):
     async def on_ready(self):
         logger.info("RepoLang command registered")
 
-    # Find a repo by language and optional topic
-    # ex. rf.repo "c,py,php" "hacktoberfest"
+    # Find a repo by optional topic
     @commands.command(name="repolang")
     @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
-
-        if languages is None:
+        logger.info(f"{ctx.message.author} - intiated repo command")
+        logger.debug(f"args: {topics}")
+        first_message = await ctx.send("Fetching a repo, just for you!")
+        if languages is None or languages == "":
             logger.debug(
                 f"{ctx.message.author} - initiated repolang with no required args")
-            first_message = await ctx.send("""You need to specify a language!
+            await first_message.edit(content="""You need to specify a language!
 Example:```fix
 rf.repolang \"python\"
 ```""")
+
         else:
             logger.info(f"{ctx.message.author} - initiated repolang")
             logger.debug(f"args: {languages} ; {topics}")
-            first_message = await ctx.send("Fetching a repo, just for you!")
 
             # languages = languages.replace(" ", "").split(",")
             if "," in languages:  # if user separates by comma, split and strip spaces
@@ -67,13 +70,13 @@ rf.repolang \"python\"
             try:
                 logger.info("Payload built. Sending to search_requester...")
                 resp = await requester.requester(payload)
-            except core.RequestError as e:
+            except RequestError as e:
                 # FIX: Logs random exceptions to the console
                 logger.warning(e)
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
                 return
 
-            if resp["total_count"] == 0:
+            if languages == "" or topics == "" or resp["total_count"] == 0:
                 await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
             else:
                 repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
