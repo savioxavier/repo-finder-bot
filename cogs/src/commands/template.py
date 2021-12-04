@@ -23,7 +23,7 @@ from cogs.src import (
 from cogs.core import RequestError
 """
 
-# change this - this labels log messages for debug mode
+# Change this - this labels log messages for debug mode
 logger = logutil.initLogger("template.py")
 
 
@@ -36,7 +36,7 @@ class Command(commands.Cog):
     async def on_ready(self):  # code to execute when cog has been loaded
         logger.info("Command cog registered")
 
-    # set this to your command name. The bot will respond to this with the prefix next to it. ex: rf.command
+    # Set this to your command name. The bot will respond to this with the prefix next to it. eg: rf.command
     @commands.command(name="command")
     # Pass all arguments as "args" and default to NoneType
     async def command(self, ctx, *, args: str = None):
