@@ -161,6 +161,7 @@ else:
 for module in command_modules:
     try:
         client.load_extension("cogs.src.commands." + module)
+        client.load_extension("slashcogs.src.commands." + module)
     except Exception as e:
         logger.error(f"Could not import cog {module}: \n{e}")
 
