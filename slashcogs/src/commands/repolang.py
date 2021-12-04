@@ -27,7 +27,7 @@ class RepoLang(commands.Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        logger.info("RepoLang command registered")
+        logger.info("RepoLang slash command registered")
 
     # Find a repo by optional topic
     @cog_ext.cog_slash(name="repolang", description="Get GitHub repository based on language.", guild_ids=[DEV_GUILD])

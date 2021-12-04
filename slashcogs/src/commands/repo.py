@@ -23,7 +23,7 @@ class Repo(commands.Cog):
 
     @Cog.listener()
     async def on_ready(self):
-        logger.info("Repo command registered")
+        logger.info("Repo slash command registered")
 
     # Find a repo by optional topic
     @cog_ext.cog_slash(name="repo", description="Find a GitHub repoistory.", guild_ids=[DEV_GUILD])

@@ -43,7 +43,7 @@ class Meta(commands.Cog):
         logger.info("Info command registered - Meta cog up!")
 
     @commands.command(name="info")
-    async def comand_botinfo(self, ctx):
+    async def command_botinfo(self, ctx):
         "Info command for the bot"
         logger.debug(f"{ctx.message.author} - initiated info command")
 

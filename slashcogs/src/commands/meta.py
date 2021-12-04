@@ -40,10 +40,10 @@ class Meta(commands.Cog):
     async def on_ready(self):
         "Function to determine what commands are to be if bot is connected to Discord"
 
-        logger.info("Info command registered - Meta cog up!")
+        logger.info("Info slash command registered - Meta cog up!")
 
     @cog_ext.cog_slash(name="info", description="Get bot info.", guild_ids=[DEV_GUILD])
-    async def comand_botinfo(self, ctx):
+    async def command_botinfo(self, ctx):
         "Info command for the bot"
         logger.debug(f"{ctx.author} - initiated info command")
 
