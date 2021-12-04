@@ -28,30 +28,6 @@ class RequestError(Exception):
     pass
 
 
-# dynamically load all cogs found in commands as modules
-# prepare for slash_commands
-command_modules = []
-try:
-    # os.chdir(os.path.dirname(__file__) + "/src/commands")
-    sys.path.insert(0, os.path.dirname(__file__) + "/src/commands")
-    for module in os.listdir(f"{os.path.dirname(__file__)}/src/commands"):
-        try:
-            if module in ("__init__.py", "template.py") or module[-3:] != ".py":
-                continue
-            __import__("cogs.src.commands." + module[:-3], locals(), globals())
-            command_modules.append(module[:-3])
-        except Exception as e:
-            logger.error(f'Could not import module "{module[:-3]}": {e}')
-except Exception as e:
-    logger.error(f'Could not import cog modules: {e}')
-    sys.exit(1)
-finally:
-    logger.info("Imported {} command modules: {}".format(
-        len(command_modules),
-        ', '.join(command_modules)
-    )) if command_modules else logger.warn("Imported 0 command modules. Command availability limited")
-
-
 class Finder(commands.Cog):
     """Main class for the Finder command
 

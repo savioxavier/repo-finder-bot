@@ -149,10 +149,21 @@ command_modules = [
     if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
 ]
 
+slash_modules = [
+    module[:-3]
+    for module in os.listdir(f"{os.path.dirname(__file__)}/slashcogs/src/commands")
+    if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
+]
+
 if command_modules:
     logger.info('Importing {} cogs: {}'.format(
         len(command_modules),
         ', '.join(command_modules)
+    ))
+if slash_modules:
+    logger.info('Importing {} slash cogs: {}'.format(
+        len(slash_modules),
+        ', '.join(slash_modules)
     ))
 else:
     logger.warning("Could not import any cogs!")
