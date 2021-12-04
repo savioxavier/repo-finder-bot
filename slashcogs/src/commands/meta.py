@@ -9,10 +9,11 @@ import time
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
+from discord_slash import cog_ext
 from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (create_actionrow,
                                                    create_button)
-from discord_slash import cog_ext
+
 from cogs.src import logutil
 
 logger = logutil.initLogger("meta.py")

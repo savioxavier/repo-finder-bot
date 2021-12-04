@@ -4,10 +4,10 @@ from os.path import dirname as dn
 
 from discord.ext import commands
 from discord.ext.commands import Cog
+from discord_slash import cog_ext
 
 from cogs.core import RequestError
 from cogs.src import build_query, logutil, process_embed, requester
-from discord_slash import cog_ext
 
 Cog = commands.Cog
 
