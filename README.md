@@ -52,7 +52,14 @@ Please read [CONTRIBUTING.md](https://github.com/savioxavier/repo-finder-bot/blo
 - **How do I run the bot myself?**
 
 > 1. Clone this repository
-> 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)
+> 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)  
+> **Register it for slash commands:**
+> - Under *OAuth2 > General*, set the Authorization Method to "In-app Authorization"
+> - Tick `bot` and `applications.commands`
+> - Go to *OAuth2 > URL Generator*, tick `bot` and `applications.commands`. For Bot Permissions, tick:
+> > - General: Read Messages/View Channels  
+> > - Text Permissions: Send Messages, Manage Messages, and Embed Links
+> - Copy the generated URL at the bottom of the page to invite it to desired servers
 > 3. Create a GitHub personal access token from [here](https://github.com/settings/tokens/) (Make sure to copy it immediately! You "lose" it once you refresh or close the tab)
 > 4. Make a new file called `.env` inside the repo folder and paste the below code block in the file
 > ```
@@ -71,7 +78,14 @@ Please read [CONTRIBUTING.md](https://github.com/savioxavier/repo-finder-bot/blo
 - **How do I run the bot via Docker?**
 
 > 1. Clone this repository
-> 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)
+> 2. Create a Discord bot token from [here](https://discord.com/developers/applications/)  
+> **Register it for slash commands:**
+> - Under *OAuth2 > General*, set the Authorization Method to "In-app Authorization"
+> - Tick `bot` and `applications.commands`
+> - Go to *OAuth2 > URL Generator*, tick `bot` and `applications.commands`. For Bot Permissions, tick:
+> > - General: Read Messages/View Channels  
+> > - Text Permissions: Send Messages, Manage Messages, and Embed Links
+> - Copy the generated URL at the bottom of the page to invite it to desired servers
 > 3. Create a GitHub personal access token from [here](https://github.com/settings/tokens/) (Make sure to copy it immediately! You "lose" it once you refresh or close the tab)
 > 4. Make a new file called `.env` inside the repo folder and paste the below code block in the file
 > ```
