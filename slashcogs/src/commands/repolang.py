@@ -5,6 +5,7 @@ from os.path import dirname as dn
 from discord.ext import commands
 from discord.ext.commands import Cog
 from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
 from utils import build_query, logutil, process_embed, requester
 from utils.core import RequestError
@@ -30,7 +31,22 @@ class RepoLang(commands.Cog):
         logger.info("RepoLang slash command registered")
 
     # Find a repo by optional topic
-    @cog_ext.cog_slash(name="repolang", description="Find a GitHub repository with required languages and optional topics", guild_ids=[DEV_GUILD])
+    @cog_ext.cog_slash(name="repolang",
+                       description="Find a GitHub repository with required languages and optional topics",
+                       guild_ids=[DEV_GUILD],
+                       options=[
+                           create_option(
+                               name="languages",
+                               description="Languages to search for",
+                               option_type=3,
+                               required=True
+                           ),
+                           create_option(
+                               name="topics",
+                               description="Topics to search for",
+                               option_type=3,
+                               required=False
+                           )])
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         logger.info(f"{ctx.author} - intiated repo command")
         logger.debug(f"args: {topics}")
