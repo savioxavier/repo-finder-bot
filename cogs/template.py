@@ -6,13 +6,13 @@ from discord.ext import commands
 
 # Import required Discord libraries
 # Highly recommended - we suggest providing proper debug logging
-from utils import logutil
+from ..utils import logutil
 
 Cog = commands.Cog
 
 # If your command requires the search_requester or process_embed functions...
 """
-from utils import (
+from ..utils import (
     requester,
     build_query,
     process_embed
@@ -20,7 +20,7 @@ from utils import (
 """
 # We highly suggest catching HTTP request exceptions with RequestError in core.py
 """
-from utils.core import RequestError
+from ..utils.core import RequestError
 """
 
 # Change this - this labels log messages for debug mode
