@@ -16,7 +16,7 @@ Cog = commands.Cog
 
 # If your command requires the search_requester or process_embed functions...
 """
-from cogs.src import (
+from utils import (
     requester,
     build_query,
     process_embed
@@ -24,7 +24,7 @@ from cogs.src import (
 """
 # We highly suggest catching HTTP request exceptions with RequestError in core.py
 """
-from core.core import logutil
+from utils.core import RequestError
 """
 
 # Change this - this labels log messages for debug mode
