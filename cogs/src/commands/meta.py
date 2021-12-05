@@ -13,7 +13,7 @@ from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (create_actionrow,
                                                    create_button)
 
-from cogs.src import logutil
+from utils import logutil
 
 logger = logutil.initLogger("meta.py")
 

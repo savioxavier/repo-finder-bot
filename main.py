@@ -10,8 +10,8 @@ from discord.ext import commands
 from discord_slash import SlashCommand
 from dotenv import load_dotenv
 
-from cogs.src import logutil
-from cogs.src.common import DEBUG
+from utils import logutil
+from utils.common import DEBUG
 
 load_dotenv()
 
@@ -141,7 +141,7 @@ async def on_command_error(ctx: commands.Context, error):
         logger.warning(f"A discord.py command error occured:\n{error}")
         await ctx.send(f"A discord.py command error occured:```{error}```Try your command again")
 
-client.load_extension("cogs.core")
+client.load_extension("utils.core")
 
 command_modules = [
     module[:-3]

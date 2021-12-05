@@ -1,8 +1,8 @@
 import aiohttp
 from requests.utils import requote_uri
 
-from cogs.core import GH_TOKEN, RequestError
-from cogs.src import build_query
+from utils import build_query
+from utils.core import GH_TOKEN, RequestError
 
 from . import logutil
 

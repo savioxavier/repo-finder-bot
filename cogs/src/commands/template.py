@@ -6,7 +6,7 @@ from discord.ext import commands
 
 # Import required Discord libraries
 # Highly recommended - we suggest providing proper debug logging
-from cogs.src import logutil
+from utils import logutil
 
 Cog = commands.Cog
 
@@ -20,7 +20,7 @@ from cogs.src import (
 """
 # We highly suggest catching HTTP request exceptions with RequestError in core.py
 """
-from cogs.core import RequestError
+from utils.core import RequestError
 """
 
 # Change this - this labels log messages for debug mode

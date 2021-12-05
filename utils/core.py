@@ -8,7 +8,7 @@ import sys
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-from cogs.src import logutil
+from utils import logutil
 
 logger = logutil.initLogger("core.py")
 

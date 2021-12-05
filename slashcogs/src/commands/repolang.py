@@ -6,8 +6,8 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 from discord_slash import cog_ext
 
-from cogs.core import RequestError
-from cogs.src import build_query, logutil, process_embed, requester
+from utils import build_query, logutil, process_embed, requester
+from utils.core import RequestError
 
 Cog = commands.Cog
 

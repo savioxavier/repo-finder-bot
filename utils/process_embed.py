@@ -7,7 +7,7 @@ from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (create_actionrow,
                                                    create_button)
 
-from cogs.core import GH_TOKEN, RequestError
+from utils.core import GH_TOKEN, RequestError
 
 from . import logutil
 

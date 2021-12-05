@@ -3,14 +3,14 @@ This file provides a template for future commands. This file will not be loaded 
 """
 
 import os
-from discord.ext import commands
 
+from discord.ext import commands
 # You will need to import cog_ext from discord_slash in order to use slash commands
 from discord_slash import cog_ext
 
 # Import required Discord libraries
 # Highly recommended - we suggest providing proper debug logging
-from cogs.src import logutil
+from utils import logutil
 
 Cog = commands.Cog
 
