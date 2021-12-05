@@ -43,7 +43,7 @@ class Meta(commands.Cog):
 
         logger.info("Info slash command registered - Meta cog up!")
 
-    @cog_ext.cog_slash(name="info", description="Get bot info.", guild_ids=[DEV_GUILD])
+    @cog_ext.cog_slash(name="info", description="Get bot info", guild_ids=[DEV_GUILD])
     async def command_botinfo(self, ctx):
         "Info command for the bot"
         logger.debug(f"{ctx.author} - initiated info command")

@@ -44,7 +44,7 @@ class Command(commands.Cog):
         logger.info("Command slash cog registered")
 
     # Set this to your command name (eg: /command) and add a meaningful description. Don't forget to specify a value of [DEV_GUILD] to the guild_ids argument or your slash commands won't instantly load!
-    @cog_ext.cog_slash(name="command", description="Some description.", guild_ids=[DEV_GUILD])
+    @cog_ext.cog_slash(name="command", description="Some description for the command", guild_ids=[DEV_GUILD])
     # Pass all arguments as "args" and default to NoneType
     async def command(self, ctx, *, args: str = None):
         """

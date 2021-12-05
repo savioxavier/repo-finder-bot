@@ -30,7 +30,7 @@ class RepoLang(commands.Cog):
         logger.info("RepoLang slash command registered")
 
     # Find a repo by optional topic
-    @cog_ext.cog_slash(name="repolang", description="Get GitHub repository based on language.", guild_ids=[DEV_GUILD])
+    @cog_ext.cog_slash(name="repolang", description="Find a GitHub repository with required languages and optional topics", guild_ids=[DEV_GUILD])
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
         logger.info(f"{ctx.author} - intiated repo command")
         logger.debug(f"args: {topics}")

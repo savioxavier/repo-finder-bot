@@ -24,7 +24,7 @@ class Repo(commands.Cog):
         logger.info("Repo slash command registered")
 
     # Find a repo by optional topic
-    @cog_ext.cog_slash(name="repo", description="Find a GitHub repoistory.", guild_ids=[DEV_GUILD])
+    @cog_ext.cog_slash(name="repo", description="Find a GitHub repository with optional topics", guild_ids=[DEV_GUILD])
     async def command_find_repo(self, ctx, *, topics: str = None):
         logger.info(f"{ctx.author} - intiated repo command")
         logger.debug(f"args: {topics}")
