@@ -22,6 +22,8 @@ You can also search for multiple topics, eg: `rf.repo [topic1] [topic2]`.
 
 You can even search repos of specific languages *and* topics using the `rf.repolang [languages] [topics]` command.
 
+The equivalent slash commands of the above commands are also available. Check them out by typing in `/help`.
+
 - **What sort of details?**
 
 A whole array of details, including basic info ranging from the amount of stars and forks to the latest issues contributed to the repo.
@@ -30,9 +32,9 @@ Here's an example:
 
 ![Screenshot](https://i.imgur.com/WFXDioS_d.webp?maxwidth=760&fidelity=grand)
 
-- **Why are there no slash commands?**
+- **Are there slash commands?**
 
-There was a slight trouble trying to fetch data using slash commands but don't worry, slash commands will be added soon!
+Yep, slash commands have been added! Check them out by typing in `/help`.
 
 - **Cool bot, can I add it to my server?**
 
