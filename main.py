@@ -85,31 +85,34 @@ async def setprefix(ctx, *, prefixes=""):
 
 
 BOT_HELP = """
-**`help`** - Displays this embed.
+• **`help`**, Slash equivalent: **`/help`**
+> Displays this embed.
 
-**`repo [topic] [topic]`** - Find a repo with an optional topic(s). Topic defaults to `hacktoberfest`. Can also specify multiple topics:
-```py
-rf.repo python hacktoberfest
-```
-or:
-```py
-rf.repo python, hacktoberfest
-```
+• **`repo [topic] [topic]`**, Slash equivalent: **`/repo`**
+> Find a repo with an optional topic(s). Topic defaults to `hacktoberfest`. Can also specify multiple topics:
 
-**`repolang (languages) [topic]`** - Find a repo with specified language.
-Example:
 ```py
-rf.repolang \"c, py\" \"hacktoberfest, c\"
+rf.repo reactjs webdev
+```
+You can specify multiple topics by separating them with a comma too, if spaces aren't your thing.
+
+• **`repolang (languages) [topic]`**, Slash equivalent: **`/repolang`**
+> Find a repo with specified language.
+
+```py
+rf.repolang \"c, python\" \"ai, webdev\"
 ```
 - Double quotes are **required** if searching for multiple languages or topics
 - Language is **required**
 - Like `rf.repo`, you can separate with either commas or spaces
 
-**`setprefix [prefix]`** - Change prefix of the bot.
+• **`setprefix [prefix]`**
+> Change prefix of the bot.
 
-**`info`** - Returns details about the bot.
+• **`info`**, Slash equivalent: `/info`
+> Returns details about the bot.
 
-_Slash commands coming soon!_
+_Slash commands are available! They are specified right next to the regular commands in this embed._
 """
 
 # Regular help command
@@ -125,6 +128,23 @@ async def command_help(ctx):
         description=BOT_HELP,
         color=0xd95025,
         timestamp=ctx.message.created_at)
+
+    bot_help.set_thumbnail(url=client.user.avatar_url)
+    bot_help.set_footer(text="Repo Finder Bot")
+
+    await ctx.send(embed=bot_help)
+
+
+@slash.slash(name="help", description="List commands",  guild_ids=[DEV_GUILD])
+async def command_help(ctx):
+    "Main help command for the bot"
+    logger.debug(f"{ctx.author} - initiated help slash command")
+
+    bot_help = discord.Embed(
+        title="Available commands for Repo Finder Bot",
+        description=BOT_HELP,
+        color=0xd95025,
+        timestamp=ctx.created_at)
 
     bot_help.set_thumbnail(url=client.user.avatar_url)
     bot_help.set_footer(text="Repo Finder Bot")
