@@ -145,13 +145,13 @@ client.load_extension("utils.core")
 
 command_modules = [
     module[:-3]
-    for module in os.listdir(f"{os.path.dirname(__file__)}/cogs/src/commands")
+    for module in os.listdir(f"{os.path.dirname(__file__)}/cogs")
     if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
 ]
 
 slash_modules = [
     module[:-3]
-    for module in os.listdir(f"{os.path.dirname(__file__)}/slashcogs/src/commands")
+    for module in os.listdir(f"{os.path.dirname(__file__)}/slashcogs")
     if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
 ]
 
@@ -171,8 +171,8 @@ else:
 # dynamically load all cogs found in cogs/src/commmands as cog extensions
 for module in command_modules:
     try:
-        client.load_extension("cogs.src.commands." + module)
-        client.load_extension("slashcogs.src.commands." + module)
+        client.load_extension("cogs." + module)
+        client.load_extension("slashcogs." + module)
     except Exception as e:
         logger.error(f"Could not import cog {module}: \n{e}")
 

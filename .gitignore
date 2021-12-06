@@ -12,3 +12,4 @@ venv/
 # Distribution / packaging
 lib/
 lib64/
+.vscode/
