@@ -48,7 +48,7 @@ async def determine_prefix(bot, message):
         return default_prefixes
 
 logger.debug("Initial presence set")
-activity = discord.Game(name="rf.help")
+activity = discord.Game(name="rf.help • /help")
 client = commands.Bot(command_prefix=determine_prefix,
                       case_insensitive=True,
                       activity=activity,
