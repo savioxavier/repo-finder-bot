@@ -1,17 +1,18 @@
 import re
-from os.path import dirname as dn
+import os
 
 from discord.ext import commands
 from discord.ext.commands import Cog
+from discord_slash import cog_ext
+from discord_slash.utils.manage_commands import create_option
 
-from utils import build_query, logutil, process_embed, requester
+from utils import logutil, process_embed, requester
 from utils.core import RequestError
 
 Cog = commands.Cog
 
-
 logger = logutil.initLogger("repolang.py")
-
+DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 
 class RepoLang(commands.Cog):
 
@@ -26,22 +27,24 @@ class RepoLang(commands.Cog):
         logger.info("RepoLang command registered")
 
     # Find a repo by optional topic
-    @commands.command(name="repolang")
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
     async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
-        logger.info(f"{ctx.message.author} - intiated repo command")
+        try:
+            _author = ctx.message.author
+        except AttributeError:
+            _author = ctx.author
+        logger.info(f"{_author} - intiated repo command")
         logger.debug(f"args: {topics}")
         first_message = await ctx.send("Fetching a repo, just for you!")
         if languages is None or languages == "":
             logger.debug(
-                f"{ctx.message.author} - initiated repolang with no required args")
+                f"{_author} - initiated repolang with no required args")
             await first_message.edit(content="""You need to specify a language!
 Example:```fix
 rf.repolang \"python\"
 ```""")
 
         else:
-            logger.info(f"{ctx.message.author} - initiated repolang")
+            logger.info(f"{_author} - initiated repolang")
             logger.debug(f"args: {languages} ; {topics}")
 
             # languages = languages.replace(" ", "").split(",")
@@ -82,6 +85,29 @@ rf.repolang \"python\"
                 repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
                 await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=repo_embed, components=[embed_action_row])
 
+    @commands.command(name="repolang")
+    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
+    async def _reg_prefixed(self, ctx, languages: str = None, topics: str = None):
+        await self.command_find_repolang(ctx, languages, topics)
+
+    @cog_ext.cog_slash(name="repolang",
+                       description="Find a GitHub repository with required languages and optional topics",
+                       guild_ids=[DEV_GUILD],
+                       options=[
+                           create_option(
+                               name="languages",
+                               description="Languages to search for",
+                               option_type=3,
+                               required=True
+                           ),
+                           create_option(
+                               name="topics",
+                               description="Topics to search for",
+                               option_type=3,
+                               required=False
+                           )])
+    async def _slash_prefixed(self, ctx, languages: str = None, topics: str = None):
+        await self.command_find_repolang(ctx, languages, topics)
 
 def setup(bot):
     bot.add_cog(RepoLang(bot))
