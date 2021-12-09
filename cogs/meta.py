@@ -9,6 +9,7 @@ import time
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
+from discord_slash import cog_ext
 from discord_slash.model import ButtonStyle
 from discord_slash.utils.manage_components import (create_actionrow,
                                                    create_button)
@@ -42,16 +43,19 @@ class Meta(commands.Cog):
 
         logger.info("Info command registered - Meta cog up!")
 
-    @commands.command(name="info")
     async def command_botinfo(self, ctx):
         "Info command for the bot"
-        logger.debug(f"{ctx.message.author} - initiated info command")
+        try:
+            logger.debug(f"{ctx.message.author} - initiated info command")
+        except AttributeError:
+            # discord-py-interactions does not have an object ctx.message.author
+            logger.debug(f"{ctx.author} - initiated info command")
 
         info = discord.Embed(
             title="Bot Info",
             value="Information about the Repo Finder bot",
             color=0xd95025,
-            timestamp=ctx.message.created_at
+            timestamp=datetime.datetime.now() # does not account for timezone
         )
 
         info.set_author(
@@ -91,6 +95,15 @@ class Meta(commands.Cog):
             invite_bot_button, source_code_button)
 
         await ctx.send(embed=info, components=[embed_components])
+
+    @commands.command(name="info")
+    async def _reg_prefixed(self, ctx):
+        await self.command_botinfo(ctx)
+    
+    @cog_ext.cog_slash(name="info", description="Get bot info", guild_ids=[DEV_GUILD])
+    async def _slash_prefixed(self, ctx):
+        await self.command_botinfo(ctx)
+
 
 
 def setup(bot):

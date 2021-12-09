@@ -173,21 +173,10 @@ command_modules = [
     if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
 ]
 
-slash_modules = [
-    module[:-3]
-    for module in os.listdir(f"{os.path.dirname(__file__)}/slashcogs")
-    if module not in ("__init__.py", "template.py") and module[-3:] == ".py"
-]
-
 if command_modules:
     logger.info('Importing {} cogs: {}'.format(
         len(command_modules),
         ', '.join(command_modules)
-    ))
-if slash_modules:
-    logger.info('Importing {} slash cogs: {}'.format(
-        len(slash_modules),
-        ', '.join(slash_modules)
     ))
 else:
     logger.warning("Could not import any cogs!")
@@ -196,7 +185,6 @@ else:
 for module in command_modules:
     try:
         client.load_extension("cogs." + module)
-        client.load_extension("slashcogs." + module)
     except Exception as e:
         logger.error(f"Could not import cog {module}: \n{e}")
 
