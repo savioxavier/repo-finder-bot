@@ -11,14 +11,18 @@ from discord_slash import SlashCommand
 from dotenv import load_dotenv
 
 from utils import logutil
-from utils.common import DEBUG
+from utils.common import DEBUG, DEBUG_DISCORD
 
 load_dotenv()
 
 # Configure logging for this (main.py) handler
 logger = logutil.initLogger("main.py")
 
-logger.warning(f"Debug mode is {DEBUG}")
+# Configure logging for discord.py
+if DEBUG:
+    logging = logutil.getLogger("discord")
+
+logger.warning(f"Debug mode is {DEBUG} || Discord debug mode is {DEBUG_DISCORD}")
 
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 TOKEN = os.environ.get("TOKEN")
