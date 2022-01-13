@@ -1,70 +1,59 @@
 """
-This file provides a template for future commands. This file will not be loaded as a cog or module
+This file provides a template for future commands.
+This file will not be loaded as a cog or module
 """
 
 import os
+import interactions
 
-from discord.ext import commands
-# You will need to import cog_ext from discord_slash in order to use slash commands
-from discord_slash import cog_ext
-
-# Import required Discord libraries
 # Highly recommended - we suggest providing proper debug logging
-from utils import logutil
+from src import logutil
 
-Cog = commands.Cog
+"Uncomment if you need to interact with the interactions.Client instance"
+# from src.bot import bot
 
-# If your command requires the search_requester or process_embed functions...
-"""
-from utils import (
-    requester,
-    build_query,
-    process_embed
-)
-"""
-# We highly suggest catching HTTP request exceptions with RequestError in core.py
-"""
-from utils.core import RequestError
-"""
+"Uncomment if you want to check if a user has permissions"
+# from src.permissions import Permissions, has_permission
 
-# Change this - this labels log messages for debug mode
-logger = logutil.initLogger("template.py")
-
-# Use the DEV_GUILD environment variable to instantly load slash commands in your testing guild. Global slash commands are usually cached for an hour due to Discord API restrictions.
-DEV_GUILD = int(os.environ.get("DEV_GUILD"))
+# Change this if you'd like - this labels log messages for debug mode
+logger = logutil.init_logger(os.path.basename(__file__))
 
 
-# Rename this class to whatever you'd like. Rename it again below at setup()
-class Command(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+# Rename this class to whatever you'd like.
+#
+# Your main class command that encompasses the command functions
+# should end with a "CMD" (case insensitive).
+# If not, your cog will not be loaded.
+# This main class also gets the context passed when the command
+# is triggered.
+class CommandCMD():
+    "Main class for bot"
+    def __init__(self):
+        # BEGIN cmd_config
+        # What will your command respond to?
+        self.NAME = "helloworld"
 
-    @Cog.listener()
-    async def on_ready(self):  # code to execute when cog has been loaded
-        logger.info("Command slash cog registered")
+        # What does your command do?
+        self.DESCRIPTION = "A simple hello world command"
 
-    # Pass all arguments as "args" and default to NoneType
-    async def command(self, ctx, *, args: str = None):
+        # Write your options code here
+        # (not required. Can be empty)
+        self.OPTIONS = []
+
+        # What type of command is it?
+        # (default: CHAT_INPUT)
+        self.TYPE = interactions.ApplicationCommandType.CHAT_INPUT
+        # END cmd_config
+        logger.info("%s command module registered" %
+                    __class__.__name__)
+
+    # If you defined options above,
+    # add them here in the keywords of the command()
+    async def command(ctx):
         """
         Your command code goes here
         """
+        await ctx.send("Hello!")
 
-    # Set this to a command name. This will be called with your server's prefix (eg. rf.command)
-    @commands.command(name="command")
-    async def _reg_prefixed(self, ctx):
-        # If your function name is different, change it here
-        await self.command(ctx,)
-
-    # Set this to your command name (eg: /command) and add a meaningful description. Don't forget to specify a value of [DEV_GUILD] to the guild_ids argument or your slash commands won't instantly load!
-    @cog_ext.cog_slash(name="command",
-                       description="Some description for the command",
-                       guild_ids=[DEV_GUILD])
-    async def _slash_prefixed(self, ctx,):
-        "Register slash command"
-        # If your function name is different, change it here
-        await self.command(ctx,)
-
-
-def setup(bot):
-    # Required for cog to register
-    bot.add_cog(Command(bot))  # Don't forget to rename the class here!
+# You can have multiple classes for each command
+# Just define another command class below

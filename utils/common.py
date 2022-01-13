@@ -1,8 +1,8 @@
 # Print debug verbose messages
-DEBUG = False
+DEBUG = True
 
 # Print discord.py verbose/debug messages
-DEBUG_DISCORD = False
+DEBUG_DISCORD = True
 
 # Use color while logging
 USE_COLOR = True

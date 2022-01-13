@@ -1,74 +1,60 @@
 import re
 import os
 
-from discord.ext import commands
-from discord.ext.commands import Cog
-from discord_slash import cog_ext
-from discord_slash.utils.manage_commands import create_option
+import interactions
 
 from utils import logutil, process_embed, requester
+from utils.build_query import parse_args
 from utils.core import RequestError
 
-Cog = commands.Cog
-
-logger = logutil.initLogger("repolang.py")
+logger = logutil.init_logger("repolang.py")
 DEV_GUILD = int(os.environ.get("DEV_GUILD"))
 
-class RepoLang(commands.Cog):
 
-    _api_repos_re = re.compile("(api.)|(/repos)")
-    _whitespace_re = re.compile(r"\s\s+")
-
-    def __init__(self, client):
-        self.client = client
-
-    @Cog.listener()
-    async def on_ready(self):
-        logger.info("RepoLang command registered")
+class RepoLangCmd:
+    def __init__(self):
+        self.NAME = "repolang"
+        self.DESCRIPTION = "Search repos by language and optional topic"
+        self.OPTIONS = [
+            interactions.Option(
+                name="languages",
+                description="Language(s) to search. Separate by spaces or commas",
+                type=interactions.OptionType.STRING,
+                required=True
+            ),
+            interactions.Option(
+                name="topics",
+                description="Topic(s) to search. Separate by spaces or commas",
+                type=interactions.OptionType.STRING,
+                required=False
+            )
+        ]
+        self.TYPE = interactions.ApplicationCommandType.CHAT_INPUT
+        logger.info(f"{__class__.__name__} command class registered")
 
     # Find a repo by optional topic
-    async def command_find_repolang(self, ctx, languages: str = None, topics: str = None):
-        try:
-            _author = ctx.message.author
-        except AttributeError:
-            _author = ctx.author
-        logger.info(f"{_author} - intiated repo command")
-        logger.debug(f"args: {topics}")
-        first_message = await ctx.send("Fetching a repo, just for you!")
+    async def command(ctx: interactions.CommandContext, languages: str = None, topics: str = None):
+        await ctx.defer()
+        logger.debug("Got args from user:\ntopics: '%s'\nlanguages: '%s'" % (topics, languages))
         if languages is None or languages == "":
             logger.debug(
-                f"{_author} - initiated repolang with no required args")
-            await first_message.edit(content="""You need to specify a language!
+                f"{ctx.author.user.username} - initiated repolang with no required args")
+            await ctx.send(content="""You need to specify a language!
 Example:```fix
-rf.repolang \"python\"
+/repolang \"python\"
 ```""")
 
         else:
-            logger.info(f"{_author} - initiated repolang")
+            logger.info(f"{ctx.author.user.username} - initiated repolang")
             logger.debug(f"args: {languages} ; {topics}")
 
-            # languages = languages.replace(" ", "").split(",")
-            if "," in languages:  # if user separates by comma, split and strip spaces
-                languages = [s.strip() for s in languages.split(",")]
-            elif " " in languages:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
-                languages = self._whitespace_re.sub(" ", languages)
-                languages = languages.replace(" ", ",").split(",")
-            else:
-                languages = [languages, ]
             payload = {
                 'method': "repositories",
-                'languages': languages,
+                'languages': parse_args(languages),
             }
 
             if topics:
-                if "," in topics:  # if user separates by comma, split and strip spaces
-                    topics = [s.strip() for s in topics.split(",")]
-                elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
-                    topics = self._whitespace_re.sub(" ", topics)
-                    topics = topics.replace(" ", ",").split(",")
-                else:
-                    topics = [topics]
-                payload["topics"] = topics
+                payload["topics"] = parse_args(topics)
 
             try:
                 logger.info("Payload built. Sending to search_requester...")
@@ -76,38 +62,26 @@ rf.repolang \"python\"
             except RequestError as e:
                 # FIX: Logs random exceptions to the console
                 logger.warning(e)
-                await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
+                await ctx.send(content="Something went wrong trying to fetch data. " +
+                                       "An incorrect query, perhaps? Maybe try the command again?")
                 return
 
-            if languages == "" or topics == "" or resp["total_count"] == 0:
-                await first_message.edit(content="Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?")
-            else:
-                repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
-                await first_message.edit(content="Found a new repo matching language(s) `{}`!".format(', '.join(languages)), embed=repo_embed, components=[embed_action_row])
-
-    @commands.command(name="repolang")
-    @commands.cooldown(rate=1, per=10, type=commands.BucketType.user)
-    async def _reg_prefixed(self, ctx, languages: str = None, topics: str = None):
-        await self.command_find_repolang(ctx, languages, topics)
-
-    @cog_ext.cog_slash(name="repolang",
-                       description="Find a GitHub repository with required languages and optional topics",
-                       guild_ids=[DEV_GUILD],
-                       options=[
-                           create_option(
-                               name="languages",
-                               description="Languages to search for",
-                               option_type=3,
-                               required=True
-                           ),
-                           create_option(
-                               name="topics",
-                               description="Topics to search for",
-                               option_type=3,
-                               required=False
-                           )])
-    async def _slash_prefixed(self, ctx, languages: str = None, topics: str = None):
-        await self.command_find_repolang(ctx, languages, topics)
-
-def setup(bot):
-    bot.add_cog(RepoLang(bot))
+            try:
+                if languages == "" or topics == "" or resp["total_count"] == 0:
+                    await ctx.send(content="Something went wrong trying to fetch data. " +
+                                           "An incorrect query, perhaps? Maybe try the command again?")
+                else:
+                    repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
+                    _content = "Found a new repo matching language(s) `{}`".format(
+                            ', '.join(parse_args(languages))
+                        )
+                    _content += " and topics {}".format(', '. join(parse_args(topics))) if topics else ""
+                    await ctx.send(
+                        content=_content + "!",
+                        embeds=[repo_embed],
+                        components=[embed_action_row]
+                    )
+            except Exception:  # noqa
+                logger.warn(exc_info=1)
+                await ctx.send(content="Something went wrong trying to fetch data. " +
+                                       "An incorrect query, perhaps? Maybe try the command again?")
