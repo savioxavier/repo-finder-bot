@@ -1,12 +1,10 @@
 import aiohttp
 from requests.utils import requote_uri
 
-from utils import build_query
+from utils import build_query, logutil
 from utils.core import GH_TOKEN, RequestError
 
-from . import logutil
-
-logger = logutil.initLogger("requester.py")
+logger = logutil.init_logger("requester.py")
 
 """ This will handle all search requests from now on. Provides modularity for future search commands """
 
@@ -27,10 +25,6 @@ async def requester(payload):
         'searchQuery': 'add command handler'
     }
     """
-    """ Example query based on above payload example (excluding issue example):
-        https://api.github.com/search/repositories?q=topic:hacktoberfest+topic:hacktoberfest2021+language:python+language:javascript+'add command handler'
-                                        {method}              {topics}                              {languages}                         {searchQuery}
-    """
     logger.debug(f"Handling a search request:\n{payload}")
     raw_query = "".join(build_query.build_query(
         key, payload[key]) for key in payload)
@@ -42,7 +36,10 @@ async def requester(payload):
     try:
         logger.debug("Sending query...")
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
-            async with session.get(url, headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}) as response:
+            async with session.get(
+                    url,
+                    headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}
+            ) as response:
                 return await response.json()
-    except:
+    except Exception:
         raise RequestError

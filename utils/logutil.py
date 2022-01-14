@@ -6,7 +6,8 @@ import logging
 
 from .common import DEBUG, DEBUG_DISCORD
 
-def getLogger(name):
+
+def get_logger(name):
     """Function to get a logger
     Useful for modules that have already initialized a logger, such as discord.py
     """
@@ -17,7 +18,8 @@ def getLogger(name):
     __logger.addHandler(__ch)
     return __logger
 
-def initLogger(name="root"):
+
+def init_logger(name="root"):
     """Function to create a designated logger for separate modules"""
     __logger = logging.Logger(name)
     __ch = logging.StreamHandler()
