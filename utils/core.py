@@ -25,13 +25,6 @@ if not GH_TOKEN:
     sys.exit(1)
 
 
-async def get_bot_self() -> interactions.User:
-    try:
-        return interactions.User(**await bot.http.get_self())
-    except Exception:  # noqa
-        return None
-
-
 class RequestError(Exception):
     if str(sys.exc_info()[2]) != "None":
         _logger.warning("RequestError was raised")

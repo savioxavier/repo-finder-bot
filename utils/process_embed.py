@@ -10,7 +10,7 @@ from utils.core import GH_TOKEN, RequestError
 logger = logutil.init_logger("process_embed.py")
 
 
-async def process_embed(resp, ctx):
+async def process_embed(resp):
     _api_repos_re = re.compile("(api.)|(/repos)")
     _whitespace_re = re.compile(r"\s\s+")
 
@@ -45,11 +45,12 @@ License  🛡️ : {repo_license_name}
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
             async with session.get(
                     issues_url,
-                    headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}
+                    headers={"Content-Type": "application/json",
+                             "Authorization": GH_TOKEN}
             ) as issue_response_get:
                 issue_response = await issue_response_get.json()
-    except Exception:  # noqa
-        raise RequestError
+    except Exception as e:  # noqa
+        raise RequestError from e
     try:
         issue_title = issue_response[0]['title']
 
@@ -68,40 +69,41 @@ License  🛡️ : {repo_license_name}
         issue_details = "Looks like there are no issues for this repository!"
     repo_topics = data2["topics"]
     list_of_all_topics = " ".join(map(str, repo_topics))
-    REPO_TOPICS_LIST = f"""```fix
+    logger.debug("Building embed...")
+    _embed_fields = [
+        interactions.EmbedField(
+            name="Language",
+            value=repo_language,
+            inline=True
+        ),
+        interactions.EmbedField(
+            name="Stars",
+            value=stargazers_count,
+            inline=True
+        ),
+        interactions.EmbedField(
+            name="Details",
+            value=repo_details,
+            inline=False
+        ),
+        interactions.EmbedField(
+            name="Latest Issues",
+            value=issue_details,
+            inline=False
+        )
+    ]
+
+    if list_of_all_topics.replace(" ", "") != '':
+        REPO_TOPICS_LIST = f"""```fix
 {list_of_all_topics}
 ```
     """
 
-    logger.debug("Building embed...")
-    _embed_fields = [
-            interactions.EmbedField(
-                name="Language",
-                value=repo_language,
-                inline=True
-            ),
-            interactions.EmbedField(
-                name="Stars",
-                value=stargazers_count,
-                inline=True
-            ),
-            interactions.EmbedField(
-                name="Details",
-                value=repo_details,
-                inline=False
-            ),
-            interactions.EmbedField(
-                name="Latest Issues",
-                value=issue_details,
-                inline=False
-            )
-        ]
-    if len(list_of_all_topics.replace(" ", "")) > 0:
         _embed_fields.append(interactions.EmbedField(
-                name="Topics",
-                value=REPO_TOPICS_LIST,
-                inline=False
-            )
+            name="Topics",
+            value=REPO_TOPICS_LIST,
+            inline=False
+        )
         )
     repo_button = interactions.Button(
         style=interactions.ButtonStyle.LINK,

@@ -3,30 +3,30 @@ Meta commands script for the bot
 """
 
 import datetime
+import os
 import time
 
 import interactions
 
+from config import DEV_GUILD
 from utils import logutil
-from utils.core import get_bot_self
-logger = logutil.init_logger("meta.py")
+
+logger = logutil.init_logger(os.path.basename(__file__))
 
 global bot_start_time
 bot_start_time = time.time()
 
 
-class MetaCmd:
-    def __init__(self):
-        self.NAME = "info"
-        self.DESCRIPTION = "Show bot information"
-        self.TYPE = None
-        self.OPTIONS = None
-        logger.info(f"{__class__.__name__} command class registered")
+class Meta(interactions.Extension):
+    def __init__(self, client: interactions.Client):
+        self.client: interactions.Client = client
+        logger.info(f"{__class__.__name__} cog registered")
 
-    async def command(ctx: interactions.CommandContext):
+    @interactions.extension_command(name="info", description="View details about the bot", scope=DEV_GUILD)
+    async def info_cmd(self, ctx: interactions.CommandContext):
         """Info command for the bot"""
-        bot_user = await get_bot_self()
-        logger.debug(f"{ctx.author.user.username} - initiated info command")
+
+        bot_user = interactions.User(** await self.client._http.get_self())
 
         uptime = datetime.timedelta(
             seconds=int(round(time.time() - bot_start_time)))
@@ -73,7 +73,7 @@ class MetaCmd:
             ],
             thumbnail=interactions.EmbedImageStruct(
                 url=bot_user.avatar
-            )._json,
+            ),
             footer=interactions.EmbedFooter(
                 text="Repo Finder Bot"
             )
@@ -96,4 +96,10 @@ class MetaCmd:
             components=[invite_bot_button, source_code_button]
         )
 
+        info.timestamp = datetime.datetime.utcnow()
+
         await ctx.send(embeds=info, components=embed_components)
+
+
+def setup(client: interactions.Client):
+    Meta(client)

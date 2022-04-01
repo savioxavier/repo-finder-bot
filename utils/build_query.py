@@ -1,4 +1,5 @@
 import re
+
 from utils import logutil
 
 logger = logutil.init_logger("build_query.py")
@@ -26,15 +27,15 @@ def build_query(key, value):
                     # Prevent malformed queries by appending a "+" at the end if there is none
                     raw_query += "+"
                 # Just remove the last letter, topics -> topic
-                raw_query += key[:len(key) - 1] + ":" + str(i) + "+"
+                raw_query += f'{key[:-1]}:{str(i)}+'
         else:
             if len(raw_query) > 0 and raw_query[-1] != "+":
                 # Prevent malformed queries by appending a "+" at the end if there is none
                 raw_query += "+"
-            raw_query += key[:len(key) - 1] + ":" + value[0] + "+"
+            raw_query += f'{key[:-1]}:{value[0]}+'
     elif key == "issue" and value:
         raw_query += ("is:issue+" if value["type"] == "issue" else "is:pr+"
                       ) + ("is:open+" if value["isOpen"] is True else "")
     elif key == "searchQuery" and value:
-        raw_query += "\"{}\"".format(value) if value else ""
+        raw_query += f'"{value}"' if value else ""
     return raw_query

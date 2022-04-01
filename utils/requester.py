@@ -38,7 +38,8 @@ async def requester(payload):
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
             async with session.get(
                     url,
-                    headers={"Content-Type": "application/json", "Authorization": GH_TOKEN}
+                    headers={"Content-Type": "application/json",
+                             "Authorization": GH_TOKEN}
             ) as response:
                 return await response.json()
     except Exception:
