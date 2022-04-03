@@ -1,4 +1,5 @@
 import os
+from inspect import cleandoc
 
 import interactions
 
@@ -29,7 +30,6 @@ class Repo(interactions.Extension):
         ],
     )
     async def repo_cmd(self, ctx: interactions.CommandContext, topics: str = "hacktoberfest"):
-
         await ctx.defer()
         logger.debug(f"args: {topics}")
 
@@ -44,27 +44,45 @@ class Repo(interactions.Extension):
         except RequestError as e:
             # FIX: Logs random exceptions to the console
             logger.warning(e)
-            await ctx.send(content="Something went wrong trying to fetch data. " +
-                                   "An incorrect query, perhaps? Maybe try the command again?")
+            await ctx.send(content=cleandoc(f"""
+                Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
+
+                Your query was:
+                ```py
+                Topics: '{topics}'
+                ```
+            """), ephemeral=True)
             return
 
         try:
             if resp["total_count"] == 0:
                 logger.warning("Response returned zero results")
-                await ctx.send(content="Something went wrong trying to fetch data. " +
-                                       "An incorrect query, perhaps? Maybe try the command again?")
+                await ctx.send(content=cleandoc(f"""
+                    Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
+
+                    Your query was:
+                    ```py
+                    Topics: '{topics}'
+                    ```
+                """), ephemeral=True)
             else:
-                repo_embed, embed_action_row = await process_embed.process_embed(resp)
+                repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
                 await ctx.send(
                     content=f"Found a new repo matching topic(s) `{', '.join(parse_args(topics))}`!",
                     embeds=[repo_embed],
                     components=[embed_action_row],
                 )
 
-        except Exception:  # noqa
-            logger.warn(exc_info=1)
-            await ctx.send(content="Something went wrong trying to fetch data. " +
-                                   "An incorrect query, perhaps? Maybe try the command again?")
+        except Exception as e:  # noqa
+            logger.warn(e, exc_info=1)
+            await ctx.send(content=cleandoc(f"""
+                Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
+
+                Your query was:
+                ```py
+                Topics: '{topics}'
+                ```
+            """), ephemeral=True)
 
 
 def setup(client: interactions.Client):

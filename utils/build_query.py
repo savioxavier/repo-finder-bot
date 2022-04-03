@@ -33,9 +33,11 @@ def build_query(key, value):
                 # Prevent malformed queries by appending a "+" at the end if there is none
                 raw_query += "+"
             raw_query += f'{key[:-1]}:{value[0]}+'
-    elif key == "issue" and value:
-        raw_query += ("is:issue+" if value["type"] == "issue" else "is:pr+"
-                      ) + ("is:open+" if value["isOpen"] is True else "")
-    elif key == "searchQuery" and value:
-        raw_query += f'"{value}"' if value else ""
+    elif key == "issue":
+        if value:
+            raw_query += ("is:issue+" if value["type"] == "issue" else "is:pr+"
+                          ) + ("is:open+" if value["isOpen"] is True else "")
+    elif key == "searchQuery":
+        if value:
+            raw_query += f'"{value}"' if value else ""
     return raw_query

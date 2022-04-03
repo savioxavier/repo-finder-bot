@@ -10,7 +10,7 @@ from utils.core import GH_TOKEN, RequestError
 logger = logutil.init_logger("process_embed.py")
 
 
-async def process_embed(resp):
+async def process_embed(resp, ctx):
     _api_repos_re = re.compile("(api.)|(/repos)")
     _whitespace_re = re.compile(r"\s\s+")
 

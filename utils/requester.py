@@ -29,8 +29,8 @@ async def requester(payload):
     raw_query = "".join(build_query.build_query(
         key, payload[key]) for key in payload)
 
-    url = "https://api.github.com/search/{}?q={}&per_page=75".format(
-        payload["method"], requote_uri(raw_query))  # encode and build the query
+    url = f'https://api.github.com/search/{payload["method"]}?q={requote_uri(raw_query)}&per_page=75'
+
     logger.debug(f"URL built: {url}")
 
     try:
@@ -42,5 +42,5 @@ async def requester(payload):
                              "Authorization": GH_TOKEN}
             ) as response:
                 return await response.json()
-    except Exception:
-        raise RequestError
+    except Exception as e:
+        raise RequestError from e

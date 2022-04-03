@@ -1,4 +1,6 @@
 import os
+import re
+from inspect import cleandoc
 
 import interactions
 
@@ -14,6 +16,9 @@ class Repolang(interactions.Extension):
     def __init__(self, client: interactions.Client):
         self.client: interactions.Client = client
         logger.info(f"{__class__.__name__} cog registered")
+
+        self._api_repos_re = re.compile("(api.)|(/repos)")
+        self._whitespace_re = re.compile(r"\s\s+")
 
     @interactions.extension_command(
         name="repolang",
@@ -37,58 +42,79 @@ class Repolang(interactions.Extension):
     async def repolang_cmd(self, ctx: interactions.CommandContext, languages: str = None, topics: str = None):
         await ctx.defer()
 
-        logger.debug(
-            "Got args from user:\ntopics: '%s'\nlanguages: '%s'" % (topics, languages))
+        logger.info(f"{ctx.author.user.username} - intiated repolang command")
+        logger.debug(f"args: {topics}")
 
-        if languages is None or not languages:
-            logger.debug(
-                f"{ctx.author.user.username} - initiated repolang with no required args")
-            await ctx.send(content="""You need to specify a language!
-Example:```fix
-/repolang \"python\"
-```""")
+        logger.info(f"{ctx.author.user.username} - initiated repolang")
+        logger.debug(f"args: {languages} ; {topics}")
 
+        # languages = languages.replace(" ", "").split(",")
+        if "," in languages:  # if user separates by comma, split and strip spaces
+            languages = [s.strip() for s in languages.split(",")]
+        elif " " in languages:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
+            languages = self._whitespace_re.sub(" ", languages)
+            languages = languages.replace(" ", ",").split(",")
         else:
-            logger.info(f"{ctx.author.user.username} - initiated repolang")
-            logger.debug(f"args: {languages} ; {topics}")
+            languages = [languages, ]
+        payload = {
+            'method': "repositories",
+            'languages': languages,
+        }
 
-            payload = {
-                'method': "repositories",
-                'languages': parse_args(languages),
-            }
+        if topics:
+            if "," in topics:  # if user separates by comma, split and strip spaces
+                topics = [s.strip() for s in topics.split(",")]
+            elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
+                topics = self._whitespace_re.sub(" ", topics)
+                topics = topics.replace(" ", ",").split(",")
+            else:
+                topics = [topics]
+            payload["topics"] = topics
 
-            if topics:
-                payload["topics"] = parse_args(topics)
+        try:
+            logger.info("Payload built. Sending to search_requester...")
+            resp = await requester.requester(payload)
+        except RequestError as e:
+            # FIX: Logs random exceptions to the console
+            logger.warning(e)
+            await ctx.send(content=cleandoc(f"""
+                Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
-            try:
-                logger.info("Payload built. Sending to search_requester...")
-                resp = await requester.requester(payload)
-            except RequestError as e:
-                # FIX: Logs random exceptions to the console
-                logger.warning(e)
-                await ctx.send(content="Something went wrong trying to fetch data. " +
-                                       "An incorrect query, perhaps? Maybe try the command again?")
-                return
+                Your query was:
+                ```py
+                Languages: \"{languages}\", Topics: \"{topics}\"
+                ```
+            """), ephemeral=True)
+            return
 
-            try:
-                if not topics or resp["total_count"] == 0:
-                    await ctx.send(content="Something went wrong trying to fetch data. " +
-                                           "An incorrect query, perhaps? Maybe try the command again?")
-                else:
-                    repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
-                    _content = f"Found a new repo matching language(s) `{', '.join(parse_args(languages))}`"
+        try:
+            if languages == "" or topics == "" or resp["total_count"] == 0:
+                logger.warning("Response returned zero results")
+                await ctx.send(content=cleandoc(f"""
+                    Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
-                    _content += f" and topics {', '. join(parse_args(topics))}" if topics else ""
-                    await ctx.send(
-                        content=f'{_content}!',
-                        embeds=[repo_embed],
-                        components=[embed_action_row],
-                    )
-
-            except Exception as e:  # noqa
-                logger.warning(e)
-                await ctx.send(content="Something went wrong trying to fetch data. " +
-                                       "An incorrect query, perhaps? Maybe try the command again?")
+                    Your query was:
+                    ```py
+                    Languages: \"{languages}\", Topics: \"{topics}\"
+                    ```
+                """), ephemeral=True)
+            else:
+                repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
+                await ctx.send(
+                    content=f"Found a new repo matching language(s) `{', '.join(languages)}`!",
+                    embeds=repo_embed,
+                    components=[embed_action_row],
+                )
+        except Exception as e:
+            logger.warning(e, exc_info=1)
+            await ctx.send(content=cleandoc(f"""
+                Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
+                
+                Your query was:
+                ```py
+                Languages: \"{languages}\", Topics: \"{topics}\"
+                ```
+            """), ephemeral=True)
 
 
 def setup(client: interactions.Client):

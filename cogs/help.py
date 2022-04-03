@@ -7,23 +7,28 @@ from utils import logutil
 
 logger = logutil.init_logger(os.path.basename(__file__))
 
-BOT_HELP = """
-• `/help`
+horizontal_rule = "━" * 10
+
+BOT_HELP = f"""
+• **`/help`**
 > Displays this embed.
-• `/repo [topic] [topic]`
+{horizontal_rule}
+• **`/repo [topics]`**
 > Find a repo with an optional topic(s). Topic defaults to `hacktoberfest`. Can also specify multiple topics:
 ```py
-/repo reactjs webdev
+/repo topics:reactjs, webdev
 ```
 You can specify multiple topics by separating them with a comma too, if spaces aren't your thing.
-• `repolang languages: [topic:]`
-> Find a repo with specified language.
+{horizontal_rule}
+• **`repolang languages [topics]`**
+> Find a repo with specified language and optional topic(s).
 ```py
-rf.repolang languages:c, python topics:ai, webdev
+/repolang languages:c, python topics:ai, webdev
 ```
 - Language is **required**
 - Like `/repo`, you can separate with either commas or spaces
-• `info`
+{horizontal_rule}
+• **`info`**
 > Returns details about the bot.
 """
 
@@ -38,10 +43,23 @@ class Help(interactions.Extension):
         self,
         ctx: interactions.CommandContext,
     ):
+
+        bot_user = interactions.User(** await self.client._http.get_self())
+
         bot_help = interactions.Embed(
             title="Available commands for Repo Finder Bot",
             description=BOT_HELP,
             color=0xd95025,
+            author=interactions.EmbedAuthor(
+                name=f"{bot_user.username}#{bot_user.discriminator}",
+                icon_url=bot_user.avatar_url or None
+            ),
+            thumbnail=interactions.EmbedImageStruct(
+                url=bot_user.avatar_url
+            ),
+            footer=interactions.EmbedFooter(
+                text="Repo Finder Bot"
+            )
         )
         await ctx.send(embeds=bot_help)
 

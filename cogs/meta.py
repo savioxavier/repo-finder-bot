@@ -46,7 +46,7 @@ class Meta(interactions.Extension):
             color=0xd95025,
             author=interactions.EmbedAuthor(
                 name=f"{bot_user.username}#{bot_user.discriminator}",
-                icon_url=bot_user.avatar or None
+                icon_url=bot_user.avatar_url or None
             ),
             fields=[
                 interactions.EmbedField(
@@ -72,7 +72,7 @@ class Meta(interactions.Extension):
                 )
             ],
             thumbnail=interactions.EmbedImageStruct(
-                url=bot_user.avatar
+                url=bot_user.avatar_url
             ),
             footer=interactions.EmbedFooter(
                 text="Repo Finder Bot"
