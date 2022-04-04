@@ -38,29 +38,30 @@ class Help(interactions.Extension):
         self.client: interactions.Client = client
         logger.info(f"{__class__.__name__} cog registered")
 
-    @interactions.extension_command(name="help", description="Lists available commands for the Repo Finder Bot", scope=DEV_GUILD)
+    @interactions.extension_command(
+        name="help",
+        description="Lists available commands for the Repo Finder Bot",
+        scope=DEV_GUILD,
+    )
     async def help_cmd(
         self,
         ctx: interactions.CommandContext,
     ):
 
-        bot_user = interactions.User(** await self.client._http.get_self())
+        bot_user = interactions.User(**await self.client._http.get_self())
 
         bot_help = interactions.Embed(
             title="Available commands for Repo Finder Bot",
             description=BOT_HELP,
-            color=0xd95025,
+            color=0xD95025,
             author=interactions.EmbedAuthor(
                 name=f"{bot_user.username}#{bot_user.discriminator}",
-                icon_url=bot_user.avatar_url or None
+                icon_url=bot_user.avatar_url or None,
             ),
-            thumbnail=interactions.EmbedImageStruct(
-                url=bot_user.avatar_url
-            ),
-            footer=interactions.EmbedFooter(
-                text="Repo Finder Bot"
-            )
+            thumbnail=interactions.EmbedImageStruct(url=bot_user.avatar_url),
+            footer=interactions.EmbedFooter(text="Repo Finder Bot"),
         )
+
         await ctx.send(embeds=bot_help)
 
 

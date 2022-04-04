@@ -23,6 +23,7 @@ logger.debug(
 
 # Instantiate environment variables
 TOKEN = None
+
 try:
     if not (TOKEN := os.environ.get("TOKEN")):
         TOKEN = None
@@ -40,30 +41,27 @@ client = interactions.Client(
     disable_sync=False,
     presence=interactions.ClientPresence(
         status=interactions.StatusType.ONLINE,
-        activities=[interactions.PresenceActivity(
-            type=interactions.PresenceActivityType.GAME,
-            name="/help"
-        )]
-    ),)
-
-# BEGIN on_ready
+        activities=[
+            interactions.PresenceActivity(
+                type=interactions.PresenceActivityType.GAME, name="/help"
+            )
+        ],
+    ),
+)
 
 
 @client.event
 async def on_ready():
     """Called when bot is ready to receive interactions"""
 
-    bot_user = bot_user = interactions.User(** await client._http.get_self())
+    bot_user = bot_user = interactions.User(**await client._http.get_self())
 
     logger.info(f"Logged in as {bot_user.username}#{bot_user.discriminator}")
 
 
-# END on_ready
-
-
-# BEGIN cogs_dynamic_loader
+# Dynamic cog loader (dynamic command registration)
 # Fill this array with Python files in /cogs.
-# This omits __init__.py, template.py, and excludes files without a py file extension
+# This omits __init__.py, template.py, and excludes files without a .py file extension
 cogs = [
     module[:-3]
     for module in os.listdir(f"{os.path.dirname(__file__)}/cogs")
@@ -77,6 +75,5 @@ for cog in cogs:
     except Exception as e:
         logger.error(f"Could not load a cog: {cog}", exc_info=DEBUG)
         logger.error(e)
-# END cogs_dynamic_loader
 
 client.start()

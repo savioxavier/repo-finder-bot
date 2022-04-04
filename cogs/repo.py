@@ -29,14 +29,14 @@ class Repo(interactions.Extension):
             )
         ],
     )
-    async def repo_cmd(self, ctx: interactions.CommandContext, topics: str = "hacktoberfest"):
+    async def repo_cmd(
+        self, ctx: interactions.CommandContext, topics: str = "hacktoberfest"
+    ):
         await ctx.defer()
+
         logger.debug(f"args: {topics}")
 
-        payload = {
-            'method': "repositories",
-            'topics': parse_args(topics)
-        }
+        payload = {"method": "repositories", "topics": parse_args(topics)}
 
         try:
             logger.info("Payload built. Sending to search_requester...")
@@ -44,29 +44,44 @@ class Repo(interactions.Extension):
         except RequestError as e:
             # FIX: Logs random exceptions to the console
             logger.warning(e)
-            await ctx.send(content=cleandoc(f"""
+
+            await ctx.send(
+                content=cleandoc(
+                    f"""
                 Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
                 Your query was:
                 ```py
                 Topics: '{topics}'
                 ```
-            """), ephemeral=True)
+            """
+                ),
+                ephemeral=True,
+            )
             return
 
         try:
             if resp["total_count"] == 0:
                 logger.warning("Response returned zero results")
-                await ctx.send(content=cleandoc(f"""
+
+                await ctx.send(
+                    content=cleandoc(
+                        f"""
                     Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
                     Your query was:
                     ```py
                     Topics: '{topics}'
                     ```
-                """), ephemeral=True)
+                """
+                    ),
+                    ephemeral=True,
+                )
             else:
-                repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
+                repo_embed, embed_action_row = await process_embed.process_embed(
+                    resp, ctx
+                )
+
                 await ctx.send(
                     content=f"Found a new repo matching topic(s) `{', '.join(parse_args(topics))}`!",
                     embeds=[repo_embed],
@@ -75,14 +90,20 @@ class Repo(interactions.Extension):
 
         except Exception as e:  # noqa
             logger.warn(e, exc_info=1)
-            await ctx.send(content=cleandoc(f"""
+
+            await ctx.send(
+                content=cleandoc(
+                    f"""
                 Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
                 Your query was:
                 ```py
                 Topics: '{topics}'
                 ```
-            """), ephemeral=True)
+            """
+                ),
+                ephemeral=True,
+            )
 
 
 def setup(client: interactions.Client):

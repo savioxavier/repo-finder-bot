@@ -36,39 +36,52 @@ class Repolang(interactions.Extension):
                 name="topics",
                 description="Topic(s) to search for. Separate by spaces or commas",
                 required=False,
-            )
+            ),
         ],
     )
-    async def repolang_cmd(self, ctx: interactions.CommandContext, languages: str = None, topics: str = None):
+    async def repolang_cmd(
+        self,
+        ctx: interactions.CommandContext,
+        languages: str = None,
+        topics: str = None,
+    ):
         await ctx.defer()
-
-        logger.info(f"{ctx.author.user.username} - intiated repolang command")
-        logger.debug(f"args: {topics}")
 
         logger.info(f"{ctx.author.user.username} - initiated repolang")
         logger.debug(f"args: {languages} ; {topics}")
 
+        # Formatting rules:
         # languages = languages.replace(" ", "").split(",")
-        if "," in languages:  # if user separates by comma, split and strip spaces
+        # if user separates by comma, split and strip spaces
+        # if user separates by space, strip duplicate spaces, and replace spaces with commas
+        if "," in languages:
             languages = [s.strip() for s in languages.split(",")]
-        elif " " in languages:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
+        elif " " in languages:
             languages = self._whitespace_re.sub(" ", languages)
             languages = languages.replace(" ", ",").split(",")
         else:
-            languages = [languages, ]
+            languages = [
+                languages,
+            ]
+
         payload = {
-            'method': "repositories",
-            'languages': languages,
+            "method": "repositories",
+            "languages": languages,
         }
 
         if topics:
-            if "," in topics:  # if user separates by comma, split and strip spaces
+            # Formatting rules:
+            # topics = topics.replace(" ", "").split(",")
+            # if user separates by comma, split and strip spaces
+            # if user separates by space, strip duplicate spaces, and replace spaces with commas
+            if "," in topics:
                 topics = [s.strip() for s in topics.split(",")]
-            elif " " in topics:  # if user separates by space, strip duplicate spaces, and replace spaces with commas
+            elif " " in topics:
                 topics = self._whitespace_re.sub(" ", topics)
                 topics = topics.replace(" ", ",").split(",")
             else:
                 topics = [topics]
+
             payload["topics"] = topics
 
         try:
@@ -77,29 +90,45 @@ class Repolang(interactions.Extension):
         except RequestError as e:
             # FIX: Logs random exceptions to the console
             logger.warning(e)
-            await ctx.send(content=cleandoc(f"""
+
+            await ctx.send(
+                content=cleandoc(
+                    f"""
                 Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
                 Your query was:
                 ```py
                 Languages: \"{languages}\", Topics: \"{topics}\"
                 ```
-            """), ephemeral=True)
+            """
+                ),
+                ephemeral=True,
+            )
+
             return
 
         try:
             if languages == "" or topics == "" or resp["total_count"] == 0:
                 logger.warning("Response returned zero results")
-                await ctx.send(content=cleandoc(f"""
+
+                await ctx.send(
+                    content=cleandoc(
+                        f"""
                     Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
 
                     Your query was:
                     ```py
                     Languages: \"{languages}\", Topics: \"{topics}\"
                     ```
-                """), ephemeral=True)
+                """
+                    ),
+                    ephemeral=True,
+                )
             else:
-                repo_embed, embed_action_row = await process_embed.process_embed(resp, ctx)
+                repo_embed, embed_action_row = await process_embed.process_embed(
+                    resp, ctx
+                )
+
                 await ctx.send(
                     content=f"Found a new repo matching language(s) `{', '.join(languages)}`!",
                     embeds=repo_embed,
@@ -107,14 +136,20 @@ class Repolang(interactions.Extension):
                 )
         except Exception as e:
             logger.warning(e, exc_info=1)
-            await ctx.send(content=cleandoc(f"""
+
+            await ctx.send(
+                content=cleandoc(
+                    f"""
                 Something went wrong trying to fetch data. An incorrect query, perhaps? Maybe try the command again?
                 
                 Your query was:
                 ```py
                 Languages: \"{languages}\", Topics: \"{topics}\"
                 ```
-            """), ephemeral=True)
+            """
+                ),
+                ephemeral=True,
+            )
 
 
 def setup(client: interactions.Client):

@@ -20,8 +20,10 @@ bot = interactions.Client(token=_TOKEN)
 _logger = logutil.init_logger("core.py")
 
 if not GH_TOKEN:
-    _logger.critical("Github token not found. Please make sure " +
-                     "it is present in your environment variables")
+    _logger.critical(
+        "Github token not found. Please make sure it is present in your environment variables"
+    )
+
     sys.exit(1)
 
 

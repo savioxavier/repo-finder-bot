@@ -10,7 +10,7 @@ logger = logutil.init_logger("requester.py")
 
 
 async def requester(payload):
-    """ Our payload structure example:
+    """Our payload structure example:
     payload = {
         # For now, search for open issues, repo topics, and repo languages
         'method': 'repositories',                        # https://docs.github.com/en/rest/reference/search
@@ -26,8 +26,7 @@ async def requester(payload):
     }
     """
     logger.debug(f"Handling a search request:\n{payload}")
-    raw_query = "".join(build_query.build_query(
-        key, payload[key]) for key in payload)
+    raw_query = "".join(build_query.build_query(key, payload[key]) for key in payload)
 
     url = f'https://api.github.com/search/{payload["method"]}?q={requote_uri(raw_query)}&per_page=75'
 
@@ -35,11 +34,12 @@ async def requester(payload):
 
     try:
         logger.debug("Sending query...")
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as session:
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=60)
+        ) as session:
             async with session.get(
-                    url,
-                    headers={"Content-Type": "application/json",
-                             "Authorization": GH_TOKEN}
+                url,
+                headers={"Content-Type": "application/json", "Authorization": GH_TOKEN},
             ) as response:
                 return await response.json()
     except Exception as e:
