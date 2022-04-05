@@ -2,7 +2,7 @@
 DEBUG = False
 
 # Print discord.py verbose/debug messages
-DEBUG_DISCORD = False
+DEBUG_INTERACTIONS = False
 
 # Use color while logging
 USE_COLOR = True

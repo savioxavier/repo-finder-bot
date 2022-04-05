@@ -1,70 +1,60 @@
 """
-This file provides a template for future commands. This file will not be loaded as a cog or module
+This file provides a template for future commands.
+This file will not be loaded as a cog or module
 """
 
+# os module - required for obtaining the current file name for logging purposes
 import os
 
-from discord.ext import commands
-# You will need to import cog_ext from discord_slash in order to use slash commands
-from discord_slash import cog_ext
+# Main interactions-py module (discord-py-interactions)
+import interactions
 
-# Import required Discord libraries
+# Your DEV_GUILD is the ID of the guild/server in which development is done
+from config import DEV_GUILD
+
 # Highly recommended - we suggest providing proper debug logging
 from utils import logutil
 
-Cog = commands.Cog
-
-# If your command requires the search_requester or process_embed functions...
-"""
-from utils import (
-    requester,
-    build_query,
-    process_embed
-)
-"""
-# We highly suggest catching HTTP request exceptions with RequestError in core.py
-"""
-from utils.core import RequestError
-"""
-
-# Change this - this labels log messages for debug mode
-logger = logutil.initLogger("template.py")
-
-# Use the DEV_GUILD environment variable to instantly load slash commands in your testing guild. Global slash commands are usually cached for an hour due to Discord API restrictions.
-DEV_GUILD = int(os.environ.get("DEV_GUILD"))
+# Change this if you'd like - this labels log messages for debug mode
+logger = logutil.init_logger(os.path.basename(__file__))
 
 
-# Rename this class to whatever you'd like. Rename it again below at setup()
-class Command(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+# Rename this class to whatever you'd like.
+# This main class also gets the context passed when the command
+# is triggered.
+class CommandName:
+    "Main class for the command. This is where you define your command logic"
 
-    @Cog.listener()
-    async def on_ready(self):  # code to execute when cog has been loaded
-        logger.info("Command slash cog registered")
+    def __init__(self, client: interactions.Client):
+        # Register the bot client with the class
+        self.client: interactions.Client = client
+        logger.info(f"{__class__.__name__} cog registered")
 
-    # Pass all arguments as "args" and default to NoneType
-    async def command(self, ctx, *, args: str = None):
+    # Use this decorator to register your command
+    # The first parameter (name) is the name of the command
+    # The second parameter (description) is the description of the command
+    # The third parameter (scope) is the scope of the command (the guild in which development is done, ie, the DEV_GUILD)
+    @interactions.extension_command(
+        name="command", description="Short description of the command", scope=DEV_GUILD
+    )
+    async def help_cmd(
+        self,
+        ctx: interactions.CommandContext,
+    ):
         """
         Your command code goes here
         """
+        # Uncomment the following line if you would like to use the bot's user object to get details such as the bot's username and avatar
+        # Example usage:
+        # bot_user.username or bot_user.avatar_url etc...
+        # bot_user = interactions.User(**await self.client._http.get_self())
 
-    # Set this to a command name. This will be called with your server's prefix (eg. rf.command)
-    @commands.command(name="command")
-    async def _reg_prefixed(self, ctx):
-        # If your function name is different, change it here
-        await self.command(ctx,)
-
-    # Set this to your command name (eg: /command) and add a meaningful description. Don't forget to specify a value of [DEV_GUILD] to the guild_ids argument or your slash commands won't instantly load!
-    @cog_ext.cog_slash(name="command",
-                       description="Some description for the command",
-                       guild_ids=[DEV_GUILD])
-    async def _slash_prefixed(self, ctx,):
-        "Register slash command"
-        # If your function name is different, change it here
-        await self.command(ctx,)
+        await ctx.send("Hello!")
 
 
-def setup(bot):
-    # Required for cog to register
-    bot.add_cog(Command(bot))  # Don't forget to rename the class here!
+# Finally, register this cog with the bot client
+# using the setup function
+# This will register the class as a cog
+# and load it into the bot client
+def setup(client: interactions.Client):
+    CommandName(client)
