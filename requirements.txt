@@ -1,4 +1,4 @@
 aiohttp==3.0.2
-discord_py_interactions==4.1.1b1
+discord-py-interactions==4.1.0
 python-dotenv==0.20.0
 requests==2.26.0
