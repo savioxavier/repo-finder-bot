@@ -1,8 +1,9 @@
+import os
 import re
 
 from utils import logutil
 
-logger = logutil.init_logger("build_query.py")
+logger = logutil.init_logger(os.path.basename(__file__))
 
 
 def parse_args(content) -> list:

@@ -1,10 +1,14 @@
+import os
+
 import aiohttp
 from requests.utils import requote_uri
 
+from config import GH_TOKEN
 from utils import build_query, logutil
-from utils.core import GH_TOKEN, RequestError
+from utils.core import RequestError
 
-logger = logutil.init_logger("requester.py")
+logger = logutil.init_logger(os.path.basename(__file__))
+
 
 """ This will handle all search requests from now on. Provides modularity for future search commands """
 

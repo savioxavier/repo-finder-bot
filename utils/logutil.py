@@ -4,15 +4,15 @@ Custom logging script
 
 import logging
 
-from .common import DEBUG, DEBUG_DISCORD
+from .common import DEBUG, DEBUG_INTERACTIONS
 
 
 def get_logger(name):
     """Function to get a logger
-    Useful for modules that have already initialized a logger, such as discord.py
+    Useful for modules that have already initialized a logger, such as interactions.py
     """
     __logger = logging.getLogger(name)
-    __logger.setLevel(logging.DEBUG if DEBUG_DISCORD else logging.INFO)
+    __logger.setLevel(logging.DEBUG if DEBUG_INTERACTIONS else logging.INFO)
     __ch = logging.StreamHandler()
     __ch.setFormatter(CustomFormatter())
     __logger.addHandler(__ch)

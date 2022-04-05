@@ -1,3 +1,4 @@
+import os
 import random
 import re
 from inspect import cleandoc
@@ -5,10 +6,11 @@ from inspect import cleandoc
 import aiohttp
 import interactions
 
+from config import GH_TOKEN
 from utils import logutil
-from utils.core import GH_TOKEN, RequestError
+from utils.core import RequestError
 
-logger = logutil.init_logger("process_embed.py")
+logger = logutil.init_logger(os.path.basename(__file__))
 
 
 async def process_embed(resp, ctx):
