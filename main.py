@@ -3,11 +3,12 @@ Master script for the bot
 """
 
 import os
+import sys
 
 import interactions
 from dotenv import load_dotenv
-
-from config import DEBUG, TOKEN
+from interactions import MISSING
+from config import DEBUG, DEV_GUILD
 from utils import logutil
 
 load_dotenv()
@@ -20,6 +21,19 @@ logger.debug(
     DEBUG,
 )
 
+# Instantiate environment variables
+TOKEN = None
+try:
+    if not (TOKEN := os.environ.get("TOKEN")):
+        TOKEN = None
+    if not DEV_GUILD or (DEV_GUILD := int(os.environ.get("DEV_GUILD"))):
+        DEV_GUILD = MISSING
+except TypeError:
+    pass
+finally:
+    if TOKEN is None:
+        logger.critical("TOKEN variable not set. Cannot continue")
+        sys.exit(1)
 
 client = interactions.Client(
     token=TOKEN,
