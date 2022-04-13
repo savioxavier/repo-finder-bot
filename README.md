@@ -1,6 +1,9 @@
 <!-- markdownlint-disable-file MD029 MD033 MD040 -->
 # repo-finder-bot
 
+> ### ⚠️ This project is still a work in progress. The bot might be unstable and changes might not have been deployed yet. Use it at your own risk.
+> ##### The bot is offline as it is currently in the process of migrating between Python libraries and will be up and running once all the bugs have been fixed.
+
 > Find the best repos to contribute to, right from Discord!
 
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
