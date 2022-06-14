@@ -63,7 +63,7 @@ class Meta(interactions.Extension):
                     inline=False,
                 ),
             ],
-            thumbnail=interactions.EmbedImageStruct(url=bot_user.avatar_url),
+            thumbnail=interactions.EmbedImageStruct(url=bot_user.avatar_url)._json,
             footer=interactions.EmbedFooter(text="Repo Finder Bot"),
         )
 

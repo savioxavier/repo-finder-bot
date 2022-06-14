@@ -20,7 +20,7 @@ BOT_HELP = f"""
 ```
 You can specify multiple topics by separating them with a comma too, if spaces aren't your thing.
 {horizontal_rule}
-• **`repolang languages [topics]`**
+• **`/repolang languages [topics]`**
 > Find a repo with specified language and optional topic(s).
 ```py
 /repolang languages:c, python topics:ai, webdev
@@ -28,7 +28,7 @@ You can specify multiple topics by separating them with a comma too, if spaces a
 - Language is **required**
 - Like `/repo`, you can separate with either commas or spaces
 {horizontal_rule}
-• **`info`**
+• **`/info`**
 > Returns details about the bot.
 """
 
@@ -58,7 +58,7 @@ class Help(interactions.Extension):
                 name=f"{bot_user.username}#{bot_user.discriminator}",
                 icon_url=bot_user.avatar_url or None,
             ),
-            thumbnail=interactions.EmbedImageStruct(url=bot_user.avatar_url),
+            thumbnail=interactions.EmbedImageStruct(url=bot_user.avatar_url)._json,
             footer=interactions.EmbedFooter(text="Repo Finder Bot"),
         )
 
